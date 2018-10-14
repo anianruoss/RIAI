@@ -1,0 +1,5 @@
+isort==4.3.4
+matplotlib==3.0.0
+numpy==1.15.2
+tensorboardX==1.4
+torch==0.4.1
