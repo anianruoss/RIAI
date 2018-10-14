@@ -74,7 +74,7 @@ def fgsm(model, x, target, eps, targeted=True, clip_min=None, clip_max=None):
 
     logits = model(input)
     model.zero_grad()
-    loss = nn.CrossEntropyLoss()(logits, target)
+    loss = nn.CrossEntropyLoss()(logits, target.to(device))
     loss.backward()
 
     if targeted:
@@ -97,8 +97,8 @@ def pgd(model, x, target, k, eps, eps_step, targeted=True, clip_min=None,
         # FGSM step
         x = fgsm(model, x, target, eps_step, targeted)
         # projection step
-        x = torch.max(x_min, x)
-        x = torch.min(x_max, x)
+        x = torch.max(x_min.to(device), x)
+        x = torch.min(x_max.to(device), x)
 
     if (clip_min is not None) or (clip_max is not None):
         x.clamp_(min=clip_min, max=clip_max)
@@ -151,7 +151,7 @@ if not path.isfile('model.pt'):
                         model, start, label, steps, eps, eps_step, clip_min=0.,
                         clip_max=1.
                     )
-                    perturbed_losses[i] = ce_loss(model(perturbed_image), label)
+                    perturbed_losses[i] = ce_loss(model(perturbed_image), label.to(device))
 
                 plt.hist(perturbed_losses, label=f'batch {batch_idx}')
                 plt.yscale('log', nonposy='clip')
