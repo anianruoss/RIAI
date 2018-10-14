@@ -3,3 +3,9 @@
 
 # virtualenv files
 venv/
+
+# data files
+mnist_data/
+
+# compiled Python code
+__pycache__/
