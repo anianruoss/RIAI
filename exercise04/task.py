@@ -151,7 +151,9 @@ if not path.isfile('model.pt'):
                         model, start, label, steps, eps, eps_step, clip_min=0.,
                         clip_max=1.
                     )
-                    perturbed_losses[i] = ce_loss(model(perturbed_image), label.to(device))
+                    perturbed_losses[i] = ce_loss(
+                        model(perturbed_image), label.to(device)
+                    )
 
                 plt.hist(perturbed_losses, label=f'batch {batch_idx}')
                 plt.yscale('log', nonposy='clip')
