@@ -85,37 +85,81 @@ def show(result_gd, result_gd_bounds, result_lbfgsb):
 
 nine = test_dataset[12][0]
 fig = plt.figure()
-plt.imshow(nine.numpy().reshape((28, 28)), cmap='gray')
+plt.imshow(nine.numpy().reshape((28, 28)), cmap='gray_r')
 plt.title('Original Nine')
 
 
-# ## Hints:
-# - You are given a code skeleton with a few functions, but you will probably need to add some more arugments to the functions and their calls.
-# - Split the target "variable" i into a fixed part (where it is equal to nine) and a variable part (that is optimized; set requires_grad for this one). Both parts should be tensors and can be combined into another tensor representing i.
-# - Create these two tensors once and then have a function that combines them and calculates the loss.
-# - For the loss it is easiest to implement a function implements the loss translation for the less-or-equal ($\leq$) and less ($<$) operators from the lecutre. You can express all parts of the loss function with this. Make this parametric in the choice of d.
+# - Create these two tensors once and then have a function that combines them
+# and calculates the loss.
+
+# - For the loss it is easiest to implement a function implements the loss
+# translation for the less-or-equal ($\leq$) and less ($<$) operators from the
+# lecture. You can express all parts of the loss function with this. Make
+# this parametric in the choice of d.
+
 # - If implemented correctly your code should not run more than a few seconds.
-# - There is no L-BFGS-B optimizer for pytroch yet. We provide a function that uses scipy to do this instead (see below).
-# 
+
+# - There is no L-BFGS-B optimizer for pytroch yet. We provide a function that
+# uses scipy to do this instead (see below).
+
+def query_loss(i_const, i_var, nn1, nn2):
+    image = torch.cat((i_const, i_var)).unsqueeze(0).unsqueeze(1)
+
+    output_nn1 = nn1(image)
+    output_nn2 = nn2(image)
+
+    loss = torch.zeros(1)
+
+    for i in range(9):
+        if i >= 7:
+            i += 1
+        loss += torch.max(torch.zeros(1), output_nn1[0, i] - output_nn1[0, 8])
+
+    for i in range(9):
+        if i >= 8:
+            i += 1
+        loss += torch.max(torch.zeros(1), output_nn2[0, i] - output_nn2[0, 8])
+
+    return loss
 
 
-def solve_gd(max_iter=100, **kwargs):
+def solve_gd(max_iter=100, use_logits=True, **kwargs):
     t0 = time.time()
     t1 = time.time()
-    loss = 0
-    solved = False
 
-    # Hint:
-    # Use pytorch SGD optimizer.
-    # Even though it says Stochastic Gradient Descent, we will perfrom Gradient Descent.
+    nn1 = NN1_logits if use_logits else NN1
+    nn2 = NN2_logits if use_logits else NN2
 
-    # return:
-    # solved: Bool; did you find a solution
-    # loss: Float; value of loss at the end
-    # i: numpy array; the resulting i
-    # t: float; how long the execution took
-    # nr: number of iterations
-    return solved, loss, nine.detach().numpy(), t1 - t0, 0
+    i_const = nine[0, 0:16, :]
+    i_var = nine[0, 16:, :]
+    i_var.requires_grad_(True)
+
+    assert torch.equal(torch.cat((i_const, i_var)).unsqueeze(0), nine)
+
+    for it in range(max_iter):
+        loss = query_loss(i_const, i_var, nn1, nn2)
+        loss.backward()
+        i_var.data -= 0.001 * i_var.grad.data
+        i_var.grad.data.zero_()
+
+        image = torch.cat((i_const, i_var)).unsqueeze(0).unsqueeze(1)
+
+        solved = torch.equal(
+            torch.argmax(nn1(image).data, 1), torch.LongTensor([8])
+        ) and torch.equal(
+            torch.argmax(nn2(image).data, 1), torch.LongTensor([9])
+        )
+
+        if solved:
+            break
+
+    return (
+        solved,
+        loss.detach()[0],
+        torch.cat((i_const, i_var)).detach().numpy(),
+        t1 - t0,
+        it + 1
+    )
 
 
 # feel free to add args to this function
