@@ -1,5 +1,5 @@
 import time
-from os import makedirs, path
+from os import path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -10,9 +10,6 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 
 PROJECT_ROOT = path.dirname(path.dirname(path.abspath(__file__)))
-
-if not path.isdir(path.join(PROJECT_ROOT, 'exercise04/plots')):
-    makedirs(path.join(PROJECT_ROOT, 'exercise04/plots'))
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 batch_size = 64
@@ -58,23 +55,20 @@ test_loader = torch.utils.data.DataLoader(
     test_dataset, batch_size=batch_size, shuffle=False
 )
 
-model = Net()
-model = model.to(device)
-model.train()
-
 # PGD parameters
-eps = 0.1
-eps_step = 0.01
-steps = 40
+steps = 5
+eps = 0.08
+eps_step = 0.05
 
 
 def fgsm(model, x, target, eps, targeted=True, clip_min=None, clip_max=None):
-    input = x.clone().detach().to(device)
+    input = x.clone().detach_().to(device)
     input.requires_grad_()
+    target = torch.LongTensor([target]).to(device)
 
     logits = model(input)
     model.zero_grad()
-    loss = nn.CrossEntropyLoss()(logits, target.to(device))
+    loss = nn.CrossEntropyLoss()(logits, target)
     loss.backward()
 
     if targeted:
@@ -93,6 +87,9 @@ def pgd(model, x, target, k, eps, eps_step, targeted=True, clip_min=None,
     x_min = x - eps
     x_max = x + eps
 
+    # generate random point in +-eps box around x
+    x = 2. * eps * torch.rand_like(x) - eps
+
     for i in range(k):
         # FGSM step
         x = fgsm(model, x, target, eps_step, targeted)
@@ -106,65 +103,93 @@ def pgd(model, x, target, k, eps, eps_step, targeted=True, clip_min=None,
     return x
 
 
-if not path.isfile('model.pt'):
+def batched_pgd(model, x_batch, y_batch, k, eps, eps_step, targeted=True,
+                clip_min=None, clip_max=None):
+    n = x_batch.size()[0]
+    xprime_batch_list = []
+
+    for i in range(n):
+        x = x_batch[i, ...]
+        y = y_batch[i]
+        xprime = pgd(
+            model, x, y, k, eps, eps_step, targeted, clip_min, clip_max
+        )
+        xprime_batch_list.append(xprime)
+
+    xprime_batch_tensor = torch.stack(xprime_batch_list)
+    assert x_batch.size() == xprime_batch_tensor.size()
+
+    return xprime_batch_tensor
+
+
+def plot_loss_histogram(model, loss, x, y, batch_idx):
+    """
+    reproduce results from Madry et al. (arXiv:1706.06083)
+    """
+    model.eval()
+
+    num_samples = 1000
+    perturbed_losses = np.empty(num_samples)
+
+    for i in range(num_samples):
+        perturbed_x = pgd(
+            model, x, y, 2 * steps, eps, eps_step, targeted=False
+        ).to(device)
+        perturbed_losses[i] = loss(
+            model(perturbed_x), y.to(device)
+        )
+
+    plt.hist(
+        perturbed_losses, label=f'batch: {batch_idx}',
+        weights=np.zeros(num_samples) + 1. / num_samples
+    )
+    plt.xlim(left=0, right=4)
+    plt.yscale('log')
+    plt.xlabel('Loss value')
+    plt.ylabel('log(frequency)')
+    plt.yticks([])
+
+
+def train_model(model, num_epochs, enable_defense=False):
     learning_rate = 0.0001
-    num_epochs = 20
-
-    opt = optim.Adam(params=model.parameters(), lr=learning_rate)
-
-    ce_loss = torch.nn.CrossEntropyLoss()
-
     tot_steps = 0
 
-    rand_train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=1, shuffle=True
-    )
+    opt = optim.Adam(params=model.parameters(), lr=learning_rate)
+    ce_loss = torch.nn.CrossEntropyLoss()
 
     for epoch in range(1, num_epochs + 1):
         t1 = time.time()
         for batch_idx, (x_batch, y_batch) in enumerate(train_loader):
-            x_batch = pgd(
-                model, x_batch, y_batch, steps, eps, eps_step, targeted=False,
-                clip_min=0., clip_max=1.
-            )
+            if batch_idx == 0:
+                x_plot = x_batch[0, :]
+                y_plot = y_batch[0].unsqueeze(0)
 
+            if batch_idx % 200 == 0:
+                plot_loss_histogram(model, ce_loss, x_plot, y_plot, batch_idx)
+
+            if enable_defense:
+                model.eval()
+                x_batch = batched_pgd(
+                    model, x_batch, y_batch, steps, eps, eps_step,
+                    targeted=False
+                )
+
+            model.train()
             x_batch, y_batch = x_batch.to(device), y_batch.to(device)
             tot_steps += 1
             opt.zero_grad()
             out = model(x_batch)
             batch_loss = ce_loss(out, y_batch)
-
-            if batch_idx % 100 == 0:
-                pred = torch.max(out, dim=1)[1]
-                acc = pred.eq(y_batch).sum().item() / float(batch_size)
-
-                # reproduce results from Madry et al. (arXiv:1706.06083)
-                image, label = next(iter(rand_train_loader))
-                x_min = image - eps
-                x_max = image + eps
-
-                perturbed_losses = np.empty(1000)
-
-                for i in range(1000):
-                    start = (x_min - x_max) * torch.rand(image.shape) + x_max
-                    perturbed_image = pgd(
-                        model, start, label, steps, eps, eps_step, clip_min=0.,
-                        clip_max=1.
-                    )
-                    perturbed_losses[i] = ce_loss(
-                        model(perturbed_image), label.to(device)
-                    )
-
-                plt.hist(perturbed_losses, label=f'batch {batch_idx}')
-                plt.yscale('log', nonposy='clip')
-                plt.xlabel('Loss value')
-                plt.ylabel('log(frequency)')
-                plt.yticks([])
-
             batch_loss.backward()
             opt.step()
 
+        plt.legend(loc=3)
+        plt.title(f'Loss Distribution for Defense = {enable_defense}')
+        plt.savefig(f'loss_distribution_defense_{enable_defense}.png')
+        plt.close()
+
         tot_test, tot_acc = 0.0, 0.0
+
         for batch_idx, (x_batch, y_batch) in enumerate(test_loader):
             x_batch, y_batch = x_batch.to(device), y_batch.to(device)
             out = model(x_batch)
@@ -172,36 +197,46 @@ if not path.isfile('model.pt'):
             acc = pred.eq(y_batch).sum().item()
             tot_acc += acc
             tot_test += x_batch.size()[0]
+
         t2 = time.time()
 
-        plt.legend()
-        plt.savefig(
-            path.join(
-                PROJECT_ROOT, 'exercise04/plots', f'frequency_epoch_{epoch}.png'
-            )
+        print(
+            'Epoch %d: Accuracy %.5lf [%.2lf seconds]' % (
+                epoch, tot_acc / tot_test, t2 - t1)
         )
-        plt.close()
-        print('Epoch %d: Accuracy %.5lf [%.2lf seconds]' % (
-            epoch, tot_acc / tot_test, t2 - t1))
 
-    torch.save(model.state_dict(), 'model.pt')
 
-else:
-    model.load_state_dict(
-        torch.load('model.pt', map_location=lambda storage, loc: storage)
+for enable_defense in [False, True]:
+    print(f'enable defense: {enable_defense}')
+
+    model_name = 'model.pt' if not enable_defense else 'model_defense.pt'
+    model = Net().to(device)
+
+    if not path.isfile(model_name):
+        train_model(model, 1, enable_defense)
+        torch.save(model.state_dict(), model_name)
+
+    else:
+        model.load_state_dict(
+            torch.load(model_name, map_location=lambda storage, loc: storage)
+        )
+
+    model.eval()
+
+    eval_size = 1000
+    eval_loader = torch.utils.data.DataLoader(
+        train_dataset, batch_size=eval_size, shuffle=False
     )
-
-model.eval()
-
-eval_loader = torch.utils.data.DataLoader(
-    train_dataset, batch_size=1000, shuffle=False
-)
-images, labels = next(iter(eval_loader))
-print('accuracy on unperturbed images:',
-      torch.max(model(images), 1)[1].eq(labels).sum().item() / labels.size()[0])
-images = pgd(
-    model, images, labels, steps, eps, eps_step, targeted=False, clip_min=0.,
-    clip_max=1.
-)
-print('accuracy on perturbed images:',
-      torch.max(model(images), 1)[1].eq(labels).sum().item() / labels.size()[0])
+    images, labels = next(iter(eval_loader))
+    images, labels = images.to(device), labels.to(device)
+    print(
+        'accuracy on unperturbed images:',
+        torch.max(model(images), 1)[1].eq(labels).sum().item() / eval_size
+    )
+    images = batched_pgd(
+        model, images, labels, steps, eps, eps_step, targeted=False
+    )
+    print(
+        'accuracy on perturbed images:',
+        torch.max(model(images), 1)[1].eq(labels).sum().item() / eval_size
+    )
