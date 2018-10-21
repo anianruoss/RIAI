@@ -1,9 +1,6 @@
-# coding: utf-8
-
-# In[ ]:
-
-
+import sys
 import time
+from os import path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,32 +8,25 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from tensorboardX import SummaryWriter
 from torchvision import datasets, transforms
 
-from exercise05.lbfgsb import *
+PROJECT_ROOT = path.dirname(path.dirname(path.abspath(__file__)))
+sys.path.append(PROJECT_ROOT)
+
+from exercise05.lbfgsb import lbfgsb
 from exercise05.model import ConvNet, Net
 
-device = torch.device("cpu")
-
-# In[ ]:
-
+device = torch.device('cpu')
 
 np.random.seed(42)
 torch.manual_seed(42)
 
-# In[ ]:
-
-
-# loading the dataset
-# note that this time we do not perfrom the normalization operation, see next cell
-test_dataset = datasets.MNIST('mnist_data/', train=False, download=True,
-                              transform=transforms.Compose(
-                                  [transforms.ToTensor()]
-                              ))
-
-
-# In[ ]:
+test_dataset = datasets.MNIST(
+    path.join(PROJECT_ROOT, 'mnist_data'),
+    train=False,
+    download=True,
+    transform=transforms.Compose([transforms.ToTensor()])
+)
 
 
 class Normalize(nn.Module):
@@ -44,31 +34,21 @@ class Normalize(nn.Module):
         return (x - 0.1307) / 0.3081
 
 
-# we load the body of the neural net trained last time...
 NN1_logits = torch.load('model_conv.net', map_location='cpu')
 NN2_logits = torch.load('model_ff.net', map_location='cpu')
 
-# ... and add the data normalization as a first "layer" to the network
-# this allows us to search for adverserial examples to the real image, rather than
-# to the normalized image
 NN1_logits = nn.Sequential(Normalize(), NN1_logits)
 NN2_logits = nn.Sequential(Normalize(), NN2_logits)
 
-# and here we also create a version of the model that outputs the class probabilities
 NN1 = nn.Sequential(NN1_logits, nn.Softmax())
 NN2 = nn.Sequential(NN2_logits, nn.Softmax())
 
-# we put the neural net into evaluation mode (this disables features like dropout)
 NN1_logits.eval()
 NN2_logits.eval()
 NN1.eval()
 NN2.eval()
 
 
-# In[ ]:
-
-
-# define a show function for later
 def show(result_gd, result_gd_bounds, result_lbfgsb):
     gd_s, gd_l, gd_i, gd_t, gd_n = result_gd
     gdb_s, gdb_l, gdb_i, gdb_t, gdb_n = result_gd_bounds
@@ -83,10 +63,12 @@ def show(result_gd, result_gd_bounds, result_lbfgsb):
             print('\tGradient Descent iterations:', it)
         p1 = NN1(torch.from_numpy(i).reshape((1, 1, 28, 28))).detach().numpy()
         p2 = NN2(torch.from_numpy(i).reshape((1, 1, 28, 28))).detach().numpy()
-        print('\tNN1_logits class: {} (p = {:.2f}) '.format(p1.argmax(),
-                                                            p1.max()))
-        print('\tNN2_logits class: {} (p = {:.2f}) '.format(p2.argmax(),
-                                                            p2.max()))
+        print('\tNN1_logits class: {} (p = {:.2f}) '.format(
+            p1.argmax(), p1.max())
+        )
+        print('\tNN2_logits class: {} (p = {:.2f}) '.format(
+            p2.argmax(), p2.max())
+        )
 
     print_res('Gradient Descent', gd_s, gd_l, gd_i, gd_t, gd_n)
     print_res('Gradient Descent w. Bounds', gdb_s, gdb_l, gdb_i, gdb_t, gdb_n)
@@ -101,9 +83,6 @@ def show(result_gd, result_gd_bounds, result_lbfgsb):
     axarr[2].set_title('L-BFGS-B')
 
 
-# In[ ]:
-
-
 nine = test_dataset[12][0]
 fig = plt.figure()
 plt.imshow(nine.numpy().reshape((28, 28)), cmap='gray')
@@ -111,7 +90,6 @@ plt.title('Original Nine')
 
 
 # ## Hints:
-# 
 # - You are given a code skeleton with a few functions, but you will probably need to add some more arugments to the functions and their calls.
 # - Split the target "variable" i into a fixed part (where it is equal to nine) and a variable part (that is optimized; set requires_grad for this one). Both parts should be tensors and can be combined into another tensor representing i.
 # - Create these two tensors once and then have a function that combines them and calculates the loss.
@@ -119,8 +97,6 @@ plt.title('Original Nine')
 # - If implemented correctly your code should not run more than a few seconds.
 # - There is no L-BFGS-B optimizer for pytroch yet. We provide a function that uses scipy to do this instead (see below).
 # 
-
-# In[ ]:
 
 
 def solve_gd(max_iter=100, **kwargs):
@@ -130,7 +106,7 @@ def solve_gd(max_iter=100, **kwargs):
     solved = False
 
     # Hint:
-    # Use pytroch SGD optimizer.
+    # Use pytorch SGD optimizer.
     # Even though it says Stochastic Gradient Descent, we will perfrom Gradient Descent.
 
     # return:
@@ -140,9 +116,6 @@ def solve_gd(max_iter=100, **kwargs):
     # t: float; how long the execution took
     # nr: number of iterations
     return solved, loss, nine.detach().numpy(), t1 - t0, 0
-
-
-# In[ ]:
 
 
 # feel free to add args to this function
@@ -158,7 +131,7 @@ def solve_lbfgsb(**kwargs):
     # It takes the tensor to optimize (var), the min and max value for each entry (a scalar),
     # a function that returns the current loss-tensor and a function that sets the 
     # gradients of everything used (NN1_logits, NN2_logits) and i_var to zero.
-    # This funciton does not return anything but changes var.
+    # This function does not return anything but changes var.
 
     # return:
     # solved: Bool; did you find a solution
@@ -168,53 +141,44 @@ def solve_lbfgsb(**kwargs):
     return solved, loss, nine.detach().numpy(), t1 - t0
 
 
-# ## using logits, initialized with zeros
+# using logits, initialized with zeros
+show(
+    solve_gd(init_zero=True),
+    solve_gd(add_bounds=True, init_zero=True),
+    solve_lbfgsb(init_zero=True)
+)
 
-# In[ ]:
+# using logits, initialized with original image
+show(
+    solve_gd(),
+    solve_gd(add_bounds=True),
+    solve_lbfgsb()
+)
 
+# using probabilities, initialized with zeros
+show(
+    solve_gd(use_logits=False, init_zero=True),
+    solve_gd(use_logits=False, init_zero=True),
+    solve_lbfgsb(use_logits=False, init_zero=True)
+)
 
-show(solve_gd(init_zero=True),
-     solve_gd(add_bounds=True, init_zero=True),
-     solve_lbfgsb(init_zero=True))
+# using probabilities, initialized with original image
+show(
+    solve_gd(use_prob=True),
+    solve_gd(add_bounds=True, use_prob=True),
+    solve_lbfgsb(use_prob=True)
+)
 
-# Note that the first image has weird colors as not all values are in [0, 1].
-
-# ## using logits, initialized with original image
-
-# In[ ]:
-
-
-show(solve_gd(),
-     solve_gd(add_bounds=True),
-     solve_lbfgsb())
-
-# ## using probabilites, initialized with zeros
-
-# In[ ]:
-
-
-show(solve_gd(use_logits=False, init_zero=True),
-     solve_gd(use_logits=False, init_zero=True),
-     solve_lbfgsb(use_logits=False, init_zero=True))
-
-# ## using probabilites, initialized with original image
-
-# In[ ]:
-
-
-show(solve_gd(use_prob=True),
-     solve_gd(add_bounds=True, use_prob=True),
-     solve_lbfgsb(use_prob=True))
-
-# We see that using probabilities is not a viable approach. The numerical optimization problem becomes basically intractable due to the softmax function.
+# We see that using probabilities is not a viable approach. The numerical
+# optimization problem becomes basically intractable due to the softmax
+# function.
 
 # ## different box constraint (task 1.7; optional), using logits
+show(
+    solve_gd(box=2),
+    solve_gd(add_bounds=True, box=2),
+    solve_lbfgsb(box=2)
+)
 
-# In[ ]:
-
-
-show(solve_gd(box=2),
-     solve_gd(add_bounds=True, box=2),
-     solve_lbfgsb(box=2))
-
-# Since the region covered by box 2 is mostly emty it does not matter much wether we use init_zero or not.
+# Since the region covered by box 2 is mostly empty it does not matter much
+# whether we use init_zero or not.
