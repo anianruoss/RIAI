@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
 
@@ -49,7 +48,7 @@ NN1.eval()
 NN2.eval()
 
 
-def show(result_gd, result_gd_bounds, result_lbfgsb):
+def show(result_gd, result_gd_bounds, result_lbfgsb, title):
     gd_s, gd_l, gd_i, gd_t, gd_n = result_gd
     gdb_s, gdb_l, gdb_i, gdb_t, gdb_n = result_gd_bounds
     lbfgsb_s, lbfgsb_l, lbfgsb_i, lbfgsb_t = result_lbfgsb
@@ -75,154 +74,210 @@ def show(result_gd, result_gd_bounds, result_lbfgsb):
     print_res('L-BFGS-B', lbfgsb_s, lbfgsb_l, lbfgsb_i, lbfgsb_t)
 
     f, axarr = plt.subplots(1, 3, figsize=(18, 16))
-    axarr[0].imshow(gd_i.reshape(28, 28), cmap='gray')
-    axarr[0].set_title('Gradient Descent')
-    axarr[1].imshow(gdb_i.reshape(28, 28), cmap='gray')
-    axarr[1].set_title('Gradient Descent w. Bounds')
-    axarr[2].imshow(lbfgsb_i.reshape(28, 28), cmap='gray')
-    axarr[2].set_title('L-BFGS-B')
+    axarr[0].imshow(gd_i.reshape(28, 28), cmap='gray_r')
+    axarr[0].set_title(f'Gradient Descent (success={gd_s})')
+    axarr[1].imshow(gdb_i.reshape(28, 28), cmap='gray_r')
+    axarr[1].set_title(f'Gradient Descent w. Bounds (success={gdb_s})')
+    axarr[2].imshow(lbfgsb_i.reshape(28, 28), cmap='gray_r')
+    axarr[2].set_title(f'L-BFGS-B (success={lbfgsb_s})')
+
+    f.suptitle(title)
+    plt.show()
 
 
 nine = test_dataset[12][0]
 fig = plt.figure()
 plt.imshow(nine.numpy().reshape((28, 28)), cmap='gray_r')
 plt.title('Original Nine')
+plt.show()
 
 
-# - Create these two tensors once and then have a function that combines them
-# and calculates the loss.
+def setup_i(box=1, init_zero=False, **kwargs):
+    """
+    Create the Optimization target composed of a fixed part (equal to the
+    original image) and an variable part that is optimized.
+    """
+    if not (box in [1, 2]):
+        box = 1
 
-# - For the loss it is easiest to implement a function implements the loss
-# translation for the less-or-equal ($\leq$) and less ($<$) operators from the
-# lecture. You can express all parts of the loss function with this. Make
-# this parametric in the choice of d.
+    if box == 1:
+        i_fix = nine[0, 0:16, :].clone()
+        i_var = nine[0, 16:, :].clone()
+    elif box == 2:
+        i_fix = nine.clone()
+        i_var = nine[0, 16:, 7:14].clone()
 
-# - If implemented correctly your code should not run more than a few seconds.
+    if init_zero:
+        i_var.zero_()
 
-# - There is no L-BFGS-B optimizer for pytroch yet. We provide a function that
-# uses scipy to do this instead (see below).
+    i_var.requires_grad_()
 
-def query_loss(i_const, i_var, nn1, nn2):
-    image = torch.cat((i_const, i_var)).unsqueeze(0).unsqueeze(1)
+    return i_fix, i_var
 
-    output_nn1 = nn1(image)
-    output_nn2 = nn2(image)
 
-    loss = torch.zeros(1)
+def le(a, b, square=False, **kwargs):
+    """
+    Encodes the loss function for "a <= b". If square is false d = |a - b| is
+    used, else d = (a - b)^2.
+    """
+    if square:
+        return torch.clamp((a - b).sign() * (a - b) * (a - b), min=0)
+    else:
+        return torch.clamp(a - b, min=0)
 
-    for i in range(9):
-        if i >= 7:
-            i += 1
-        loss += torch.max(torch.zeros(1), output_nn1[0, i] - output_nn1[0, 8])
 
-    for i in range(9):
-        if i >= 8:
-            i += 1
-        loss += torch.max(torch.zeros(1), output_nn2[0, i] - output_nn2[0, 8])
+def lt(a, b, **kwargs):
+    """
+    Encodes the loss function for "a <= b".
+    """
+    eps = 10e-15
+    return le(a + eps, b, **kwargs)
+
+
+def get_i(i_fix, i_var, box=1, **kwargs):
+    """
+    Combines the two parts of the target variable into the target variable.
+    """
+    if box != 2:
+        i = torch.cat((i_fix, i_var), 0)
+    else:
+        i = i_fix.clone()
+        i[0, 16:, 7:14] = i_var
+
+    i = i.reshape((1, 1, 28, 28))
+
+    return i
+
+
+def get_loss(i_fix, i_var, square=False, add_bounds=False, use_logits=True,
+             **kwargs):
+    """
+    Calculate the loss for the given query.
+    """
+    loss = 0
+
+    if use_logits:
+        o1 = NN1_logits(get_i(i_fix, i_var, **kwargs))
+        o2 = NN2_logits(get_i(i_fix, i_var, **kwargs))
+    else:
+        o1 = NN1(get_i(i_fix, i_var, **kwargs))
+        o2 = NN2(get_i(i_fix, i_var, **kwargs))
+
+    for k in range(10):
+        if k == 9:
+            pass
+        loss += lt(o1[0, k], o1[0, 9], square=square)
+    for k in range(10):
+        if k == 8:
+            pass
+        loss += lt(o2[0, k], o2[0, 8], square=square)
+
+    if add_bounds:
+        i_var_flat = i_var.view(-1)
+        for k in range(i_var_flat.size()[0]):
+            loss += le(0, i_var_flat[k], square=square)
+            loss += le(i_var_flat[k], 1, square=square)
 
     return loss
 
 
-def solve_gd(max_iter=100, use_logits=True, **kwargs):
+def solve_gd(setup_var_fn, get_var_fn, loss_fn, max_iter=100, **kwargs):
     t0 = time.time()
+
+    target_fix, target_var = setup_var_fn(**kwargs)
+    opt = optim.SGD(params=[target_var], lr=0.1)
+
+    for k in range(max_iter):
+        loss = loss_fn(target_fix, target_var, **kwargs)
+
+        if loss == 0:
+            break
+
+        opt.zero_grad()
+        loss.backward()
+        opt.step()
+
     t1 = time.time()
 
-    nn1 = NN1_logits if use_logits else NN1
-    nn2 = NN2_logits if use_logits else NN2
-
-    i_const = nine[0, 0:16, :]
-    i_var = nine[0, 16:, :]
-    i_var.requires_grad_(True)
-
-    assert torch.equal(torch.cat((i_const, i_var)).unsqueeze(0), nine)
-
-    for it in range(max_iter):
-        loss = query_loss(i_const, i_var, nn1, nn2)
-        loss.backward()
-        i_var.data -= 0.001 * i_var.grad.data
-        i_var.grad.data.zero_()
-
-        image = torch.cat((i_const, i_var)).unsqueeze(0).unsqueeze(1)
-
-        solved = torch.equal(
-            torch.argmax(nn1(image).data, 1), torch.LongTensor([8])
-        ) and torch.equal(
-            torch.argmax(nn2(image).data, 1), torch.LongTensor([9])
-        )
-
-        if solved:
-            break
+    loss = loss.detach().numpy()
+    solved = (loss == 0)
 
     return (
         solved,
-        loss.detach()[0],
-        torch.cat((i_const, i_var)).detach().numpy(),
+        loss,
+        get_var_fn(target_fix, target_var, **kwargs).detach().numpy(),
         t1 - t0,
-        it + 1
+        k
     )
 
 
-# feel free to add args to this function
-def solve_lbfgsb(**kwargs):
+def solve_lbfgsb(setup_var_fn, get_var_fn, loss_fn, **kwargs):
     t0 = time.time()
+
+    target_fix, target_var = setup_var_fn(**kwargs)
+
+    def get_loss_():
+        return loss_fn(target_fix, target_var, **kwargs)
+
+    def zero_grads():
+        NN1_logits.zero_grad()
+        NN2_logits.zero_grad()
+        NN1.zero_grad()
+        NN2.zero_grad()
+        if target_var.grad is not None:
+            target_var.grad.zero_()
+
+    lbfgsb(target_var, 0, 1, get_loss_, zero_grads)
+
     t1 = time.time()
-    loss = 0
-    solved = False
 
-    # Hint:
-    # Use the provided lbfgsb(var, min_val, max_val, loss_fn, zero_grad_fn)
-    # function.
-    # It takes the tensor to optimize (var), the min and max value for each entry (a scalar),
-    # a function that returns the current loss-tensor and a function that sets the 
-    # gradients of everything used (NN1_logits, NN2_logits) and i_var to zero.
-    # This function does not return anything but changes var.
+    loss = loss_fn(target_fix, target_var, **kwargs).detach().numpy()
+    solved = (loss == 0)
 
-    # return:
-    # solved: Bool; did you find a solution
-    # loss: Float; value of loss at the end
-    # i: numpy array; the resulting i
-    # t: float; how long the execution took
-    return solved, loss, nine.detach().numpy(), t1 - t0
+    return (
+        solved,
+        loss,
+        get_var_fn(target_fix, target_var, **kwargs).detach().numpy(),
+        t1 - t0
+    )
 
 
-# using logits, initialized with zeros
 show(
-    solve_gd(init_zero=True),
-    solve_gd(add_bounds=True, init_zero=True),
-    solve_lbfgsb(init_zero=True)
+    solve_gd(setup_i, get_i, get_loss),
+    solve_gd(setup_i, get_i, get_loss, add_bounds=True),
+    solve_lbfgsb(setup_i, get_i, get_loss),
+    'Query with Logits (Original Image Initialization)'
 )
-
-# using logits, initialized with original image
 show(
-    solve_gd(),
-    solve_gd(add_bounds=True),
-    solve_lbfgsb()
+    solve_gd(setup_i, get_i, get_loss, use_logits=False),
+    solve_gd(setup_i, get_i, get_loss, add_bounds=True, use_logits=False),
+    solve_lbfgsb(setup_i, get_i, get_loss, use_logits=False),
+    'Query without Logits (Original Image Initialization)'
 )
-
-# using probabilities, initialized with zeros
 show(
-    solve_gd(use_logits=False, init_zero=True),
-    solve_gd(use_logits=False, init_zero=True),
-    solve_lbfgsb(use_logits=False, init_zero=True)
+    solve_gd(setup_i, get_i, get_loss, init_zero=True),
+    solve_gd(setup_i, get_i, get_loss, add_bounds=True, init_zero=True),
+    solve_lbfgsb(setup_i, get_i, get_loss, init_zero=True),
+    'Query with Logits (Zero Initialization)'
 )
-
-# using probabilities, initialized with original image
 show(
-    solve_gd(use_prob=True),
-    solve_gd(add_bounds=True, use_prob=True),
-    solve_lbfgsb(use_prob=True)
+    solve_gd(setup_i, get_i, get_loss, use_logits=False, init_zero=True),
+    solve_gd(
+        setup_i, get_i, get_loss, add_bounds=True, use_logits=False,
+        init_zero=True
+    ),
+    solve_lbfgsb(setup_i, get_i, get_loss, use_logits=False, init_zero=True),
+    'Query without Logits (Zero Initialization)'
 )
-
-# We see that using probabilities is not a viable approach. The numerical
-# optimization problem becomes basically intractable due to the softmax
-# function.
-
-# ## different box constraint (task 1.7; optional), using logits
 show(
-    solve_gd(box=2),
-    solve_gd(add_bounds=True, box=2),
-    solve_lbfgsb(box=2)
+    solve_gd(setup_i, get_i, get_loss, square=True),
+    solve_gd(setup_i, get_i, get_loss, add_bounds=True, square=True),
+    solve_lbfgsb(setup_i, get_i, get_loss, square=True),
+    'Query with Logits and Squared Loss (Original Image Initialization)'
 )
-
-# Since the region covered by box 2 is mostly empty it does not matter much
-# whether we use init_zero or not.
+show(
+    solve_gd(setup_i, get_i, get_loss, box=2),
+    solve_gd(setup_i, get_i, get_loss, add_bounds=True, box=2),
+    solve_lbfgsb(setup_i, get_i, get_loss, box=2),
+    'Query with Logits + Box Constraints (Original Image Initialization)'
+)
