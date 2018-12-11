@@ -1,0 +1,7 @@
+def main() {
+    x := uniform(0,1);
+    y := uniform(0,1);
+    within_radius := (x*x + y*y) <= 1;
+
+    return 4 * within_radius;
+}
