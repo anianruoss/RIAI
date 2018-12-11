@@ -24,7 +24,7 @@ libc = CDLL(find_library('c'))
 cstdout = c_void_p.in_dll(libc, 'stdout')
 
 
-class layers:
+class Layers:
     def __init__(self):
         self.layertypes = []
         self.weights = []
@@ -85,7 +85,8 @@ def parse_matrix(text):
 def parse_net(text):
     lines = [*filter(lambda x: len(x) != 0, text.split('\n'))]
     i = 0
-    res = layers()
+    res = Layers()
+
     while i < len(lines):
         if lines[i] in ['ReLU', 'Affine']:
             W = parse_matrix(lines[i + 1])
@@ -97,6 +98,7 @@ def parse_net(text):
             i += 3
         else:
             raise Exception('parse error: ' + lines[i])
+
     return res
 
 
@@ -235,26 +237,32 @@ if __name__ == '__main__':
     netname = argv[1]
     specname = argv[2]
     epsilon = float(argv[3])
-    # c_label = int(argv[4])
+
     with open(netname, 'r') as netfile:
         netstring = netfile.read()
     with open(specname, 'r') as specfile:
         specstring = specfile.read()
+
     nn = parse_net(netstring)
     x0_low, x0_high = parse_spec(specstring)
     LB_N0, UB_N0 = get_perturbed_image(x0_low, 0)
 
-    label, _ = analyze(nn, LB_N0, UB_N0, 0)
+    label = analyze(nn, LB_N0, UB_N0, 0)[0]
     start = time.time()
-    if (label == int(x0_low[0])):
+
+    if label == int(x0_low[0]):
         LB_N0, UB_N0 = get_perturbed_image(x0_low, epsilon)
-        _, verified_flag = analyze(nn, LB_N0, UB_N0, label)
-        if (verified_flag):
+        verified_flag = analyze(nn, LB_N0, UB_N0, label)[1]
+
+        if verified_flag:
             print("verified")
         else:
             print("can not be verified")
+
     else:
         print("image not correctly classified by the network. expected label ",
               int(x0_low[0]), " classified label: ", label)
+
     end = time.time()
+
     print("analysis time: ", (end - start), " seconds")
