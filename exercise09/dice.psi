@@ -1,0 +1,13 @@
+def main() {
+    n := 40;
+    sum := 0;
+
+    for i in [0..n) {
+        roll := uniformInt(1,6);
+        sum += roll;
+    }
+
+    average := sum / n;
+
+    return 4 < average;
+}

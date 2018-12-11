@@ -1,0 +1,19 @@
+def main() {
+    n := 20;
+    sum := 0;
+    num_6 := 0;
+
+    for i in [0..n) {
+        roll := uniformInt(1,6);
+        sum += roll;
+
+        if roll == 6 {
+            num_6 += 1;
+        }
+    }
+
+    average := sum / n;
+    observe(10 <= num_6);
+
+    return 4 < average;
+}

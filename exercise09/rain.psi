@@ -1,17 +1,17 @@
-def main(){
+def main() {
     cloudy := flip(0.5);
     rain := 0; sprinkler := 0;
 
-    if (cloudy){
+    if (cloudy) {
         rain = flip(0.8);
         sprinkler = flip(0.1);
-    }else{
+    } else {
         rain = flip(0.2);
         sprinkler = flip(0.5);
     }
 
     wetGrass := rain || sprinkler;
-
     observe(wetGrass);
+
     return rain==1;
 }
