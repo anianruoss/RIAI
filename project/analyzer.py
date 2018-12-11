@@ -20,8 +20,6 @@ from elina_linexpr0 import *
 from elina_manager import *
 from elina_scalar import *
 
-
-
 libc = CDLL(find_library('c'))
 cstdout = c_void_p.in_dll(libc, 'stdout')
 
