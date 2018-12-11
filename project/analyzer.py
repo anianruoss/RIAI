@@ -164,7 +164,7 @@ def analyze(nn, LB_N0, UB_N0, label):
     elina_interval_array_free(itv, num_pixels)
 
     for layerno in range(numlayer):
-        if (nn.layertypes[layerno] in ['ReLU', 'Affine']):
+        if nn.layertypes[layerno] in ['ReLU', 'Affine']:
             weights = nn.weights[nn.ffn_counter]
             biases = nn.biases[nn.ffn_counter]
 
@@ -214,6 +214,7 @@ def analyze(nn, LB_N0, UB_N0, label):
 
     dims = elina_abstract0_dimension(man, element)
     output_size = dims.intdim + dims.realdim
+
     # get bounds for each output neuron
     bounds = elina_abstract0_to_box(man, element)
 
