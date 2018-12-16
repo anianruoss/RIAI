@@ -23,8 +23,6 @@ from elina_scalar import *
 libc = CDLL(find_library('c'))
 cstdout = c_void_p.in_dll(libc, 'stdout')
 
-linear_solver_layers = []
-
 
 class Layers:
     def __init__(self):
@@ -174,99 +172,42 @@ def analyze(nn, LB_N0, UB_N0, label):
             num_in_pixels = dims.intdim + dims.realdim
             num_out_pixels = len(weights)
 
-            if not linear_solver_layers[layerno]:
-                dimadd = elina_dimchange_alloc(0, num_out_pixels)
+            dimadd = elina_dimchange_alloc(0, num_out_pixels)
 
-                for i in range(num_out_pixels):
-                    dimadd.contents.dim[i] = num_in_pixels
+            for i in range(num_out_pixels):
+                dimadd.contents.dim[i] = num_in_pixels
 
-                elina_abstract0_add_dimensions(
-                    man, True, element, dimadd, False
+            elina_abstract0_add_dimensions(man, True, element, dimadd, False)
+            elina_dimchange_free(dimadd)
+
+            np.ascontiguousarray(weights, dtype=np.double)
+            np.ascontiguousarray(biases, dtype=np.double)
+            var = num_in_pixels
+
+            # handle affine layer
+            for i in range(num_out_pixels):
+                tdim = ElinaDim(var)
+                linexpr0 = generate_linexpr0(
+                    weights[i], biases[i], num_in_pixels
                 )
-                elina_dimchange_free(dimadd)
+                element = elina_abstract0_assign_linexpr_array(
+                    man, True, element, tdim, linexpr0, 1, None
+                )
+                var += 1
 
-                np.ascontiguousarray(weights, dtype=np.double)
-                np.ascontiguousarray(biases, dtype=np.double)
-                var = num_in_pixels
+            dimrem = elina_dimchange_alloc(0, num_in_pixels)
 
-                # handle affine layer
-                for i in range(num_out_pixels):
-                    tdim = ElinaDim(var)
-                    linexpr0 = generate_linexpr0(
-                        weights[i], biases[i], num_in_pixels
-                    )
-                    element = elina_abstract0_assign_linexpr_array(
-                        man, True, element, tdim, linexpr0, 1, None
-                    )
-                    var += 1
+            for i in range(num_in_pixels):
+                dimrem.contents.dim[i] = i
 
-                dimrem = elina_dimchange_alloc(0, num_in_pixels)
+            elina_abstract0_remove_dimensions(man, True, element, dimrem)
+            elina_dimchange_free(dimrem)
 
-                for i in range(num_in_pixels):
-                    dimrem.contents.dim[i] = i
-
-                elina_abstract0_remove_dimensions(man, True, element, dimrem)
-                elina_dimchange_free(dimrem)
-
-            else:
-                # define GUROBI model
-                model = Model('ReLU')
-                model.setParam('OutputFlag', False)
-
-                # get bounds for each hidden neuron
-                bounds = elina_abstract0_to_box(man, element)
-
-                # define hidden variables for GUROBI solver
-                relu_variables = [None] * num_in_pixels
-
-                for idx_in in range(num_in_pixels):
-                    lb = bounds[idx_in].contents.inf.contents.val.dbl
-                    ub = bounds[idx_in].contents.sup.contents.val.dbl
-
-                    if 0. <= lb:
-                        relu_variables[idx_in] = model.addVar(lb=lb, ub=ub)
-                    elif ub <= 0.:
-                        relu_variables[idx_in] = model.addVar(lb=0., ub=0.)
-                    else:
-                        hidden = model.addVar(lb=lb, ub=ub)
-                        relu_variables[idx_in] = model.addVar(lb=0., ub=ub)
-                        lambda_ = ub / (ub - lb)
-                        mu_ = - ub * lb / (ub - lb)
-                        model.addConstr(
-                            relu_variables[idx_in] <= lambda_ * hidden + mu_
-                        )
-                        model.addConstr(
-                            hidden <= relu_variables[idx_in]
-                        )
-
-                model.update()
-                itv = elina_interval_array_alloc(num_out_pixels)
-
-                for idx_out in range(num_out_pixels):
-                    linear_layer = LinExpr(weights[idx_out], relu_variables)
-                    linear_layer.addConstant(biases[idx_out])
-
-                    model.setObjective(linear_layer, GRB.MINIMIZE)
-                    model.optimize()
-                    lb = model.ObjVal
-
-                    model.setObjective(linear_layer, GRB.MAXIMIZE)
-                    model.optimize()
-                    ub = model.ObjVal
-
-                    elina_interval_set_double(itv[idx_out], lb, ub)
-
-                # construct input abstraction
-                element = elina_abstract0_of_box(man, 0, num_out_pixels, itv)
-                elina_interval_array_free(itv, num_out_pixels)
-
-            if not linear_solver_layers[layerno + 1]:
-                # handle ReLU layer
-                if nn.layertypes[layerno] == 'ReLU':
-                    element = relu_box_layerwise(
-                        man, True, element, 0, num_out_pixels
-                    )
-
+            # handle ReLU layer
+            if nn.layertypes[layerno] == 'ReLU':
+                element = relu_box_layerwise(
+                    man, True, element, 0, num_out_pixels
+                )
             nn.ffn_counter += 1
 
         else:
@@ -333,12 +274,7 @@ if __name__ == '__main__':
     nn = parse_net(netstring)
     x0_low, x0_high = parse_spec(specstring)
     LB_N0, UB_N0 = get_perturbed_image(x0_low, 0)
-
-    linear_solver_layers = [False] * (nn.numlayer + 1)
     label = analyze(nn, LB_N0, UB_N0, 0)[0]
-
-    # TODO: determine linear_solver_layers based on some heuristic
-    # length is layers+1 and first/last layers are always False
 
     start = time.time()
 
@@ -349,6 +285,7 @@ if __name__ == '__main__':
         if verified_flag:
             print("verified")
         else:
+            # TODO: run linear program
             print("can not be verified")
 
     else:
