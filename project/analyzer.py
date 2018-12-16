@@ -149,6 +149,8 @@ def generate_linexpr0(weights, bias, size):
 
 
 def analyze(nn, LB_N0, UB_N0, label):
+    nn_bounds = []
+
     num_pixels = len(LB_N0)
     nn.ffn_counter = 0
     numlayer = nn.numlayer
@@ -165,6 +167,8 @@ def analyze(nn, LB_N0, UB_N0, label):
 
     for layerno in range(numlayer):
         if nn.layertypes[layerno] in ['ReLU', 'Affine']:
+            layer_bounds = dict()
+
             weights = nn.weights[nn.ffn_counter]
             biases = nn.biases[nn.ffn_counter]
 
@@ -203,12 +207,40 @@ def analyze(nn, LB_N0, UB_N0, label):
             elina_abstract0_remove_dimensions(man, True, element, dimrem)
             elina_dimchange_free(dimrem)
 
+            # add bounds after affine layer
+            layer_bounds['affine'] = []
+            bounds = elina_abstract0_to_box(man, element)
+
+            for idx in range(num_out_pixels):
+                layer_bounds['affine'].append(
+                    (
+                        bounds[idx].contents.inf.contents.val.dbl,
+                        bounds[idx].contents.sup.contents.val.dbl
+                    )
+                )
+
             # handle ReLU layer
             if nn.layertypes[layerno] == 'ReLU':
                 element = relu_box_layerwise(
                     man, True, element, 0, num_out_pixels
                 )
+
+                # add bounds after ReLU layer
+                layer_bounds['relu'] = []
+                bounds = elina_abstract0_to_box(man, element)
+
+                for idx in range(num_out_pixels):
+                    layer_bounds['relu'].append(
+                        (
+                            bounds[idx].contents.inf.contents.val.dbl,
+                            bounds[idx].contents.sup.contents.val.dbl
+                        )
+                    )
+
             nn.ffn_counter += 1
+
+            # add layer bounds to total bounds
+            nn_bounds.append(layer_bounds)
 
         else:
             print(' net type not supported')
@@ -252,7 +284,7 @@ def analyze(nn, LB_N0, UB_N0, label):
     elina_abstract0_free(man, element)
     elina_manager_free(man)
 
-    return predicted_label, verified_flag
+    return predicted_label, verified_flag, nn_bounds
 
 
 if __name__ == '__main__':
@@ -280,7 +312,7 @@ if __name__ == '__main__':
 
     if label == int(x0_low[0]):
         LB_N0, UB_N0 = get_perturbed_image(x0_low, epsilon)
-        verified_flag = analyze(nn, LB_N0, UB_N0, label)[1]
+        verified_flag, bounds = analyze(nn, LB_N0, UB_N0, label)[1:3]
 
         if verified_flag:
             print("verified")
