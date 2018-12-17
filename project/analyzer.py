@@ -287,18 +287,130 @@ def analyze(nn, LB_N0, UB_N0, label):
     return predicted_label, verified_flag, nn_bounds
 
 
+def refine_all_layers(nn, LB_N0, UB_N0, bounds, label):
+    """
+    :type nn: class
+    :param nn: contains information about neural network
+    :type LB_N0: numpy.ndarray
+    :param LB_N0: lower bounds for input pixels
+    :type UB_N0: numpy.ndarray
+    :param UB_N0: upper bounds for input pixels
+    :type bounds: list of dict of list
+    :param bounds: contains box bounds for every layer in the neural network
+    :type label: int
+    :param label: ground truth label of image
+    :rtype: bool
+    :return: whether the robustness could be verified or not
+    """
+    model = Model('RefineAll')
+    model.setParam('OutputFlag', False)
+
+    num_input_variables = LB_N0.size
+    input_variables = [None] * num_input_variables
+
+    for idx_var in range(num_input_variables):
+        lb = LB_N0[idx_var]
+        ub = UB_N0[idx_var]
+        input_variables[idx_var] = model.addVar(lb=lb, ub=ub)
+
+    model.update()
+
+    relu_variables = input_variables
+
+    for idx_layer in range(nn.numlayer):
+        weights = nn.weights[idx_layer]
+        biases = nn.biases[idx_layer]
+
+        num_lin_expr = weights.shape[0]
+        lin_expr_vars = [None] * num_lin_expr
+
+        for idx_var in range(num_lin_expr):
+            lin_expr_vars[idx_var] = LinExpr(weights[idx_var], relu_variables)
+            lin_expr_vars[idx_var].addConstant(biases[idx_var])
+
+        model.update()
+
+        if nn.layertypes[idx_layer] == 'ReLU':
+            bounds_curr_layer = bounds[idx_layer]['affine']
+            relu_variables = [None] * num_lin_expr
+
+            for idx_var in range(num_lin_expr):
+                lb, ub = bounds_curr_layer[idx_var]
+
+                if 0. <= lb:
+                    relu_variables[idx_var] = model.addVar(lb=lb, ub=ub)
+                    model.addConstr(
+                        relu_variables[idx_var] ==
+                        lin_expr_vars[idx_var]
+                    )
+                elif ub <= 0.:
+                    relu_variables[idx_var] = model.addVar(lb=0., ub=0.)
+                else:
+                    relu_variables[idx_var] = model.addVar(lb=0.)
+                    lambda_ = ub / (ub - lb)
+                    mu_ = - ub * lb / (ub - lb)
+                    model.addConstr(
+                        relu_variables[idx_var] <=
+                        lambda_ * lin_expr_vars[idx_var] + mu_
+                    )
+                    model.addConstr(
+                        lin_expr_vars[idx_var] <= relu_variables[idx_var]
+                    )
+
+        model.update()
+
+    if 'relu' in bounds[-1].keys():
+        out_variables = relu_variables
+    else:
+        out_variables = lin_expr_vars
+
+    # solve the linear program
+    num_out_vars = len(out_variables)
+    out_bounds = [None] * num_out_vars
+
+    for idx_var in range(num_out_vars):
+        model.setObjective(out_variables[idx_var], GRB.MINIMIZE)
+        model.optimize()
+        lb = model.ObjVal
+
+        # TODO: remove assert
+        assert model.status == GRB.Status.OPTIMAL
+
+        model.setObjective(out_variables[idx_var], GRB.MAXIMIZE)
+        model.optimize()
+        ub = model.ObjVal
+
+        # TODO: remove assert
+        assert model.status == GRB.Status.OPTIMAL
+
+        out_bounds[idx_var] = (lb, ub)
+
+    # check if property can be verified
+    verified_flag = True
+    inf = out_bounds[label][0]
+
+    for j in range(num_out_vars):
+        if j != label:
+            sup = out_bounds[j][1]
+            if inf <= sup:
+                verified_flag = False
+                break
+
+    return verified_flag
+
+
 def refine_last_n_layers(nn, bounds, num_layers, label):
     """
     :type nn: class
     :param nn: contains information about neural network
     :type bounds: list of dict of list
-    :param bounds: contains bounds for every layer in the neural network
+    :param bounds: contains box bounds for every layer in the neural network
     :type num_layers: int
     :param num_layers: how many layers should be refined
     :type label: int
     :param label: ground truth label of image
     :rtype: bool
-    :return: whether the property could be verified or not
+    :return: whether the robustness could be verified or not
     """
     model = Model('RefineLastN')
     model.setParam('OutputFlag', False)
@@ -341,9 +453,10 @@ def refine_last_n_layers(nn, bounds, num_layers, label):
             lin_expr_vars[idx_var] = LinExpr(weights[idx_var], relu_variables)
             lin_expr_vars[idx_var].addConstant(biases[idx_var])
 
+        model.update()
+
         if 'relu' in bounds[idx_curr_layer].keys():
             bounds_curr_layer = bounds[idx_curr_layer]['affine']
-
             relu_variables = [None] * num_lin_expr
 
             for idx_var in range(num_lin_expr):
@@ -379,18 +492,21 @@ def refine_last_n_layers(nn, bounds, num_layers, label):
     # solve the linear program
     num_out_vars = len(out_variables)
     out_bounds = [None] * num_out_vars
-    model.write('model.lp')
 
     for idx_var in range(num_out_vars):
         model.setObjective(out_variables[idx_var], GRB.MINIMIZE)
         model.optimize()
         lb = model.ObjVal
-        assert (model.status == GRB.Status.OPTIMAL)
+
+        # TODO: remove assert
+        assert model.status == GRB.Status.OPTIMAL
 
         model.setObjective(out_variables[idx_var], GRB.MAXIMIZE)
         model.optimize()
         ub = model.ObjVal
-        assert (model.status == GRB.Status.OPTIMAL)
+
+        # TODO: remove assert
+        assert model.status == GRB.Status.OPTIMAL
 
         out_bounds[idx_var] = (lb, ub)
 
@@ -439,7 +555,8 @@ if __name__ == '__main__':
             print("verified")
         else:
             # TODO: heuristic
-            verified_flag = refine_last_n_layers(nn, bounds, 5, label)
+            # verified_flag = refine_last_n_layers(nn, bounds, 5, label)
+            verified_flag = refine_all_layers(nn, LB_N0, UB_N0, bounds, label)
 
             if verified_flag:
                 print("verified")
