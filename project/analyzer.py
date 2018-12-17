@@ -287,6 +287,127 @@ def analyze(nn, LB_N0, UB_N0, label):
     return predicted_label, verified_flag, nn_bounds
 
 
+def refine_last_n_layers(nn, bounds, num_layers, label):
+    """
+    :type nn: class
+    :param nn: contains information about neural network
+    :type bounds: list of dict of list
+    :param bounds: contains bounds for every layer in the neural network
+    :type num_layers: int
+    :param num_layers: how many layers should be refined
+    :type label: int
+    :param label: ground truth label of image
+    :rtype: bool
+    :return: whether the property could be verified or not
+    """
+    model = Model('RefineLastN')
+    model.setParam('OutputFlag', False)
+
+    idx_start_layer = nn.numlayer - num_layers
+    bounds_start_layer = bounds[idx_start_layer]['affine']
+
+    num_relu_variables = len(bounds_start_layer)
+    relu_variables = [None] * num_relu_variables
+
+    for idx_var in range(num_relu_variables):
+        lb, ub = bounds_start_layer[idx_var]
+
+        if 0. <= lb:
+            relu_variables[idx_var] = model.addVar(lb=lb, ub=ub)
+        elif ub <= 0.:
+            relu_variables[idx_var] = model.addVar(lb=0., ub=0.)
+        else:
+            hidden = model.addVar(lb=lb, ub=ub)
+            relu_variables[idx_var] = model.addVar(lb=0.)
+            lambda_ = ub / (ub - lb)
+            mu_ = - ub * lb / (ub - lb)
+            model.addConstr(
+                relu_variables[idx_var] <= lambda_ * hidden + mu_
+            )
+            model.addConstr(
+                hidden <= relu_variables[idx_var]
+            )
+
+    model.update()
+
+    for idx_curr_layer in range(idx_start_layer + 1, nn.numlayer):
+        weights = nn.weights[idx_curr_layer]
+        biases = nn.biases[idx_curr_layer]
+
+        num_lin_expr = weights.shape[0]
+        lin_expr_vars = [None] * num_lin_expr
+
+        for idx_var in range(num_lin_expr):
+            lin_expr_vars[idx_var] = LinExpr(weights[idx_var], relu_variables)
+            lin_expr_vars[idx_var].addConstant(biases[idx_var])
+
+        if 'relu' in bounds[idx_curr_layer].keys():
+            bounds_curr_layer = bounds[idx_curr_layer]['affine']
+
+            relu_variables = [None] * num_lin_expr
+
+            for idx_var in range(num_lin_expr):
+                lb, ub = bounds_curr_layer[idx_var]
+
+                if 0. <= lb:
+                    relu_variables[idx_var] = model.addVar(lb=lb, ub=ub)
+                    model.addConstr(
+                        relu_variables[idx_var] ==
+                        lin_expr_vars[idx_var]
+                    )
+                elif ub <= 0.:
+                    relu_variables[idx_var] = model.addVar(lb=0., ub=0.)
+                else:
+                    relu_variables[idx_var] = model.addVar(lb=0.)
+                    lambda_ = ub / (ub - lb)
+                    mu_ = - ub * lb / (ub - lb)
+                    model.addConstr(
+                        relu_variables[idx_var] <=
+                        lambda_ * lin_expr_vars[idx_var] + mu_
+                    )
+                    model.addConstr(
+                        lin_expr_vars[idx_var] <= relu_variables[idx_var]
+                    )
+
+        if 'relu' in bounds[idx_curr_layer].keys():
+            out_variables = relu_variables
+        else:
+            out_variables = lin_expr_vars
+
+        model.update()
+
+    # solve the linear program
+    num_out_vars = len(out_variables)
+    out_bounds = [None] * num_out_vars
+    model.write('model.lp')
+
+    for idx_var in range(num_out_vars):
+        model.setObjective(out_variables[idx_var], GRB.MINIMIZE)
+        model.optimize()
+        lb = model.ObjVal
+        assert (model.status == GRB.Status.OPTIMAL)
+
+        model.setObjective(out_variables[idx_var], GRB.MAXIMIZE)
+        model.optimize()
+        ub = model.ObjVal
+        assert (model.status == GRB.Status.OPTIMAL)
+
+        out_bounds[idx_var] = (lb, ub)
+
+    # check if property can be verified
+    verified_flag = True
+    inf = out_bounds[label][0]
+
+    for j in range(num_out_vars):
+        if j != label:
+            sup = out_bounds[j][1]
+            if inf <= sup:
+                verified_flag = False
+                break
+
+    return verified_flag
+
+
 if __name__ == '__main__':
     from sys import argv
 
@@ -317,8 +438,13 @@ if __name__ == '__main__':
         if verified_flag:
             print("verified")
         else:
-            # TODO: run linear program
-            print("can not be verified")
+            # TODO: heuristic
+            verified_flag = refine_last_n_layers(nn, bounds, 5, label)
+
+            if verified_flag:
+                print("verified")
+            else:
+                print("can not be verified")
 
     else:
         print("image not correctly classified by the network. expected label ",
