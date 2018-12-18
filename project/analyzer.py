@@ -417,7 +417,7 @@ def refine_all_layers(nn, LB_N0, UB_N0, bounds, label, precise=False):
     return verified_flag
 
 
-def refine_last_n_layers(nn, bounds, num_layers, label):
+def refine_last_n_layers(nn, bounds, num_layers, label, precise=False):
     """
     :type nn: class
     :param nn: contains information about neural network
@@ -427,6 +427,8 @@ def refine_last_n_layers(nn, bounds, num_layers, label):
     :param num_layers: how many layers should be refined
     :type label: int
     :param label: ground truth label of image
+    :type precise: bool
+    :param precise: whether to use box bounds for ReLUs of hidden layers or not
     :rtype: bool
     :return: whether the robustness could be verified or not
     """
@@ -479,6 +481,22 @@ def refine_last_n_layers(nn, bounds, num_layers, label):
 
             for idx_var in range(num_lin_expr):
                 lb, ub = bounds_curr_layer[idx_var]
+
+                # TODO: add logic
+                if precise:
+                    model.setObjective(lin_expr_vars[idx_var], GRB.MINIMIZE)
+                    model.optimize()
+                    lb = model.ObjVal
+
+                    # TODO: remove assert
+                    assert model.status == GRB.Status.OPTIMAL
+
+                    model.setObjective(lin_expr_vars[idx_var], GRB.MAXIMIZE)
+                    model.optimize()
+                    ub = model.ObjVal
+
+                    # TODO: remove assert
+                    assert model.status == GRB.Status.OPTIMAL
 
                 if 0. <= lb:
                     relu_variables[idx_var] = model.addVar(lb=lb, ub=ub)
