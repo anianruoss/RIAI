@@ -369,43 +369,21 @@ def refine_all_layers(nn, LB_N0, UB_N0, bounds, label, precise=False):
     else:
         out_variables = lin_expr_vars
 
-    # solve the linear program
+    # check if the property can be verified
     num_out_vars = len(out_variables)
-    out_bounds = [None] * num_out_vars
-    out_bounds_box = bounds[-1]['affine']
+    verified_flag = True
 
     for idx_var in range(num_out_vars):
-        lb, ub = out_bounds_box[idx_var]
-
-        if 0. < ub:
-            model.setObjective(out_variables[idx_var], GRB.MINIMIZE)
+        if idx_var != label:
+            model.setObjective(
+                out_variables[label] - out_variables[idx_var], GRB.MINIMIZE
+            )
             model.optimize()
-            lb = model.ObjVal
 
             # TODO: remove assert
             assert model.status == GRB.Status.OPTIMAL
 
-            model.setObjective(out_variables[idx_var], GRB.MAXIMIZE)
-            model.optimize()
-            ub = model.ObjVal
-
-            # TODO: remove assert
-            assert model.status == GRB.Status.OPTIMAL
-
-        else:
-            lb = 0.
-            ub = 0.
-
-        out_bounds[idx_var] = (lb, ub)
-
-    # check if property can be verified
-    verified_flag = True
-    inf = out_bounds[label][0]
-
-    for j in range(num_out_vars):
-        if j != label:
-            sup = out_bounds[j][1]
-            if inf <= sup:
+            if model.ObjVal <= 0.:
                 verified_flag = False
                 break
 
@@ -603,6 +581,7 @@ if __name__ == '__main__':
             if verified_flag:
                 print("verified")
             else:
+                # TODO: run refine_all_layers as last resort
                 print("can not be verified")
 
     else:
