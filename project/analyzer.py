@@ -287,7 +287,7 @@ def analyze(nn, LB_N0, UB_N0, label):
     return predicted_label, verified_flag, nn_bounds
 
 
-def refine_all_layers(nn, LB_N0, UB_N0, bounds, label):
+def refine_all_layers(nn, LB_N0, UB_N0, bounds, label, precise=False):
     """
     :type nn: class
     :param nn: contains information about neural network
@@ -299,6 +299,8 @@ def refine_all_layers(nn, LB_N0, UB_N0, bounds, label):
     :param bounds: contains box bounds for every layer in the neural network
     :type label: int
     :param label: ground truth label of image
+    :type precise: bool
+    :param precise: whether to use box bounds for ReLUs of hidden layers or not
     :rtype: bool
     :return: whether the robustness could be verified or not
     """
@@ -336,6 +338,22 @@ def refine_all_layers(nn, LB_N0, UB_N0, bounds, label):
 
             for idx_var in range(num_lin_expr):
                 lb, ub = bounds_curr_layer[idx_var]
+
+                # TODO: add logic
+                if precise:
+                    model.setObjective(lin_expr_vars[idx_var], GRB.MINIMIZE)
+                    model.optimize()
+                    lb = model.ObjVal
+
+                    # TODO: remove assert
+                    assert model.status == GRB.Status.OPTIMAL
+
+                    model.setObjective(lin_expr_vars[idx_var], GRB.MAXIMIZE)
+                    model.optimize()
+                    ub = model.ObjVal
+
+                    # TODO: remove assert
+                    assert model.status == GRB.Status.OPTIMAL
 
                 if 0. <= lb:
                     relu_variables[idx_var] = model.addVar(lb=lb, ub=ub)
@@ -556,7 +574,9 @@ if __name__ == '__main__':
         else:
             # TODO: heuristic
             # verified_flag = refine_last_n_layers(nn, bounds, 5, label)
-            verified_flag = refine_all_layers(nn, LB_N0, UB_N0, bounds, label)
+            verified_flag = refine_all_layers(
+                nn, LB_N0, UB_N0, bounds, label, precise=True
+            )
 
             if verified_flag:
                 print("verified")
