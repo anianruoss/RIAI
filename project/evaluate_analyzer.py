@@ -2,6 +2,8 @@ import argparse
 from collections import Counter
 from sys import argv
 
+import numpy as np
+
 parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument(
     'mode',
@@ -36,6 +38,7 @@ def read_ground_truth(file_name):
 
 def read_results_file(file_name):
     analyzer_results = []
+    runtimes = []
 
     with open(file_name) as f:
         idx = 0
@@ -51,6 +54,7 @@ def read_results_file(file_name):
                 analyzer_results.append(0)
             elif 'analysis time' in line:
                 runtime = float(line.split('time: ')[1].split(' seconds')[0])
+                runtimes.append(runtime)
                 idx += 1
 
                 if 6 * 60 <= runtime:
@@ -58,7 +62,7 @@ def read_results_file(file_name):
             else:
                 raise RuntimeError('unknown case in analyzer results file')
 
-    return analyzer_results
+    return analyzer_results, runtimes
 
 
 def compare_results(ground_truth, analyzer_results):
@@ -106,6 +110,26 @@ def compare_results(ground_truth, analyzer_results):
         'Accuracy:',
         (TP + TN) / (len(ground_truth) - len(misclassified(ground_truth)))
     )
+    print()
+
+
+def print_runtimes(results, runtimes):
+    success_runtimes = runtimes[results == 1]
+    failure_runtimes = runtimes[results == 0]
+
+    if success_runtimes.size:
+        print(
+            '- verified    :', round(np.mean(success_runtimes), 3),
+            '+-', round(np.var(success_runtimes), 3),
+            '( max =', round(np.max(success_runtimes), 3), ')'
+        )
+    if failure_runtimes.size:
+        print(
+            '- not verified:', round(np.mean(failure_runtimes), 3),
+            '+-', round(np.var(failure_runtimes), 3),
+            '( max =', round(np.max(success_runtimes), 3), ')'
+        )
+    print()
 
 
 if args.mode == 'verify':
@@ -117,7 +141,7 @@ if args.mode == 'verify':
         exit(1)
 
     ground_truth = read_ground_truth(args.f1)
-    analyzer_results = read_results_file(args.f2)
+    analyzer_results = read_results_file(args.f2)[0]
     compare_results(ground_truth, analyzer_results)
 
 elif args.mode == 'compare':
@@ -128,9 +152,15 @@ elif args.mode == 'compare':
         )
         exit(1)
 
-    ground_truth = read_results_file(args.f1)
-    analyzer_results = read_results_file(args.f2)
+    ground_truth, old_runtimes = read_results_file(args.f1)
+    analyzer_results, new_runtimes = read_results_file(args.f2)
     compare_results(ground_truth, analyzer_results)
+
+    print('Runtimes F1:')
+    print_runtimes(np.array(ground_truth), np.array(old_runtimes))
+    print('Runtimes F2:')
+    print_runtimes(np.array(analyzer_results), np.array(new_runtimes))
+
 
 elif args.mode == 'evaluate':
     if len(argv) != 4:
@@ -139,11 +169,13 @@ elif args.mode == 'evaluate':
         )
         exit(1)
 
-    analyzer_results = read_results_file(args.f1)
+    analyzer_results, runtimes = read_results_file(args.f1)
     eval_results = Counter(analyzer_results)
     print('verified:     ', eval_results[1])
     print('not verified: ', eval_results[0])
     print('misclassified:', eval_results[None])
+    print()
+    print_runtimes(np.array(analyzer_results), np.array(runtimes))
 
 else:
     raise ValueError('unknown mode')
