@@ -339,8 +339,7 @@ def refine_all_layers(nn, LB_N0, UB_N0, bounds, label, precise=False):
             for idx_var in range(num_lin_expr):
                 lb, ub = bounds_curr_layer[idx_var]
 
-                # TODO: add logic
-                if precise:
+                if precise and 0. < ub:
                     model.setObjective(lin_expr_vars[idx_var], GRB.MINIMIZE)
                     model.optimize()
                     lb = model.ObjVal
@@ -482,8 +481,7 @@ def refine_last_n_layers(nn, bounds, num_layers, label, precise=False):
             for idx_var in range(num_lin_expr):
                 lb, ub = bounds_curr_layer[idx_var]
 
-                # TODO: add logic
-                if precise:
+                if precise and 0. < ub:
                     model.setObjective(lin_expr_vars[idx_var], GRB.MINIMIZE)
                     model.optimize()
                     lb = model.ObjVal
