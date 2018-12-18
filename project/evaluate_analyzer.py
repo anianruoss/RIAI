@@ -20,8 +20,10 @@ with open(argv[1]) as f:
 analyzer_results = []
 
 with open(argv[2]) as f:
+    idx = 0
+
     for line in f:
-        if 'Academic license' in line or 'analysis time' in line:
+        if 'Academic license' in line:
             continue
         elif 'image not correctly classified' in line:
             analyzer_results.append(None)
@@ -29,6 +31,12 @@ with open(argv[2]) as f:
             analyzer_results.append(1)
         elif line == 'can not be verified\n':
             analyzer_results.append(0)
+        elif 'analysis time' in line:
+            runtime = float(line.split('time: ')[1].split(' seconds')[0])
+            idx += 1
+
+            if 6 * 60 <= runtime:
+                print(f'Image {idx}: LP ran for {runtime / 60} minutes')
         else:
             RuntimeError('unknown case in analyzer results file')
 
@@ -39,8 +47,9 @@ def get_misclassified(results):
     return [i for i, j in enumerate(results) if j is None]
 
 
+print()
 assert get_misclassified(ground_truth) == get_misclassified(analyzer_results)
-print(len(get_misclassified(ground_truth)), 'images not considered')
+print(len(get_misclassified(ground_truth)), 'misclassifed images')
 
 TP = 0
 FP = 0
