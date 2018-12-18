@@ -117,13 +117,13 @@ def print_runtimes(results, runtimes):
     if success_runtimes.size:
         print(
             '- verified    :', round(np.mean(success_runtimes), 3),
-            '+-', round(np.var(success_runtimes), 3),
+            '+-', round(np.std(success_runtimes), 3),
             '( max =', round(np.max(success_runtimes), 3), ')'
         )
     if failure_runtimes.size:
         print(
             '- not verified:', round(np.mean(failure_runtimes), 3),
-            '+-', round(np.var(failure_runtimes), 3),
+            '+-', round(np.std(failure_runtimes), 3),
             '( max =', round(np.max(failure_runtimes), 3), ')'
         )
     print()
