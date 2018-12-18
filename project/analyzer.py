@@ -549,12 +549,15 @@ if __name__ == '__main__':
             print("verified")
         else:
             # TODO: heuristic
-            # verified_flag = refine_last_n_layers(
-            #    nn, bounds, nn.numlayer - 1, label, precise=True
-            # )
-            verified_flag = refine_all_layers(
-                nn, LB_N0, UB_N0, bounds, label, precise=True
-            )
+            # choose refinement based on network architecture
+            if nn.numlayer == 3:
+                verified_flag = refine_all_layers(
+                    nn, LB_N0, UB_N0, bounds, label, precise=True
+                )
+            else:
+                verified_flag = refine_all_layers(
+                    nn, LB_N0, UB_N0, bounds, label, precise=True
+                )
 
             if verified_flag:
                 print("verified")
