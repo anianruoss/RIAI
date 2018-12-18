@@ -64,13 +64,12 @@ def read_results_file(file_name):
 def compare_results(ground_truth, analyzer_results):
     assert len(ground_truth) == len(analyzer_results)
 
-    def get_misclassified(results):
+    def misclassified(results):
         return [i for i, j in enumerate(results) if j is None]
 
     print()
-    assert get_misclassified(ground_truth) == get_misclassified(
-        analyzer_results)
-    print(len(get_misclassified(ground_truth)), 'misclassifed images')
+    assert misclassified(ground_truth) == misclassified(analyzer_results)
+    print(len(misclassified(ground_truth)), 'misclassifed images')
 
     TP = 0
     FP = 0
@@ -105,7 +104,7 @@ def compare_results(ground_truth, analyzer_results):
 
     print(
         'Accuracy:',
-        (TP + TN) / (len(ground_truth) - len(get_misclassified(ground_truth)))
+        (TP + TN) / (len(ground_truth) - len(misclassified(ground_truth)))
     )
 
 
