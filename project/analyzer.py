@@ -225,18 +225,6 @@ def analyze(nn, LB_N0, UB_N0, label):
                     man, True, element, 0, num_out_pixels
                 )
 
-                # add bounds after ReLU layer
-                layer_bounds['relu'] = []
-                bounds = elina_abstract0_to_box(man, element)
-
-                for idx in range(num_out_pixels):
-                    layer_bounds['relu'].append(
-                        (
-                            bounds[idx].contents.inf.contents.val.dbl,
-                            bounds[idx].contents.sup.contents.val.dbl
-                        )
-                    )
-
             nn.ffn_counter += 1
 
             # add layer bounds to total bounds
@@ -376,7 +364,7 @@ def refine_all_layers(nn, LB_N0, UB_N0, bounds, label, precise=False):
 
         model.update()
 
-    if 'relu' in bounds[-1].keys():
+    if nn.layertypes[-1] == 'ReLU':
         out_variables = relu_variables
     else:
         out_variables = lin_expr_vars
@@ -384,21 +372,29 @@ def refine_all_layers(nn, LB_N0, UB_N0, bounds, label, precise=False):
     # solve the linear program
     num_out_vars = len(out_variables)
     out_bounds = [None] * num_out_vars
+    out_bounds_box = bounds[-1]['affine']
 
     for idx_var in range(num_out_vars):
-        model.setObjective(out_variables[idx_var], GRB.MINIMIZE)
-        model.optimize()
-        lb = model.ObjVal
+        lb, ub = out_bounds_box[idx_var]
 
-        # TODO: remove assert
-        assert model.status == GRB.Status.OPTIMAL
+        if 0. < ub:
+            model.setObjective(out_variables[idx_var], GRB.MINIMIZE)
+            model.optimize()
+            lb = model.ObjVal
 
-        model.setObjective(out_variables[idx_var], GRB.MAXIMIZE)
-        model.optimize()
-        ub = model.ObjVal
+            # TODO: remove assert
+            assert model.status == GRB.Status.OPTIMAL
 
-        # TODO: remove assert
-        assert model.status == GRB.Status.OPTIMAL
+            model.setObjective(out_variables[idx_var], GRB.MAXIMIZE)
+            model.optimize()
+            ub = model.ObjVal
+
+            # TODO: remove assert
+            assert model.status == GRB.Status.OPTIMAL
+
+        else:
+            lb = 0.
+            ub = 0.
 
         out_bounds[idx_var] = (lb, ub)
 
@@ -474,7 +470,7 @@ def refine_last_n_layers(nn, bounds, num_layers, label, precise=False):
 
         model.update()
 
-        if 'relu' in bounds[idx_curr_layer].keys():
+        if nn.layertypes[idx_curr_layer] == 'ReLU':
             bounds_curr_layer = bounds[idx_curr_layer]['affine']
             relu_variables = [None] * num_lin_expr
 
@@ -516,7 +512,7 @@ def refine_last_n_layers(nn, bounds, num_layers, label, precise=False):
                         lin_expr_vars[idx_var] <= relu_variables[idx_var]
                     )
 
-        if 'relu' in bounds[idx_curr_layer].keys():
+        if nn.layertypes[idx_curr_layer] == 'ReLU':
             out_variables = relu_variables
         else:
             out_variables = lin_expr_vars
@@ -526,21 +522,29 @@ def refine_last_n_layers(nn, bounds, num_layers, label, precise=False):
     # solve the linear program
     num_out_vars = len(out_variables)
     out_bounds = [None] * num_out_vars
+    out_bounds_box = bounds[-1]['affine']
 
     for idx_var in range(num_out_vars):
-        model.setObjective(out_variables[idx_var], GRB.MINIMIZE)
-        model.optimize()
-        lb = model.ObjVal
+        lb, ub = out_bounds_box[idx_var]
 
-        # TODO: remove assert
-        assert model.status == GRB.Status.OPTIMAL
+        if 0. < ub:
+            model.setObjective(out_variables[idx_var], GRB.MINIMIZE)
+            model.optimize()
+            lb = model.ObjVal
 
-        model.setObjective(out_variables[idx_var], GRB.MAXIMIZE)
-        model.optimize()
-        ub = model.ObjVal
+            # TODO: remove assert
+            assert model.status == GRB.Status.OPTIMAL
 
-        # TODO: remove assert
-        assert model.status == GRB.Status.OPTIMAL
+            model.setObjective(out_variables[idx_var], GRB.MAXIMIZE)
+            model.optimize()
+            ub = model.ObjVal
+
+            # TODO: remove assert
+            assert model.status == GRB.Status.OPTIMAL
+
+        else:
+            lb = 0.
+            ub = 0.
 
         out_bounds[idx_var] = (lb, ub)
 
@@ -589,7 +593,9 @@ if __name__ == '__main__':
             print("verified")
         else:
             # TODO: heuristic
-            # verified_flag = refine_last_n_layers(nn, bounds, 5, label)
+            # verified_flag = refine_last_n_layers(
+            #    nn, bounds, nn.numlayer - 1, label, precise=True
+            # )
             verified_flag = refine_all_layers(
                 nn, LB_N0, UB_N0, bounds, label, precise=True
             )
