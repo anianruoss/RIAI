@@ -1,6 +1,5 @@
 import argparse
 from collections import Counter
-from sys import argv
 
 import numpy as np
 
@@ -12,9 +11,7 @@ parser.add_argument(
          '\t - compare  (compare against other result file)\n' +
          '\t - evaluate (compute accuracy of single file)'
 )
-parser.add_argument('-f1')
-parser.add_argument('-f2')
-args = parser.parse_args()
+args = parser.parse_known_args()
 
 
 def read_ground_truth(file_name):
@@ -132,49 +129,49 @@ def print_runtimes(results, runtimes):
     print()
 
 
-if args.mode == 'verify':
-    if len(argv) != 6:
+if args[0].mode == 'verify':
+    if len(args[1]) != 2:
         print(
-            'python3 evaluate_analyzer.py verify' +
-            '-f1 ground_truth.txt -f2 results_file.txt'
+            'python3 evaluate_analyzer.py verify ground_truth.txt results.txt'
         )
         exit(1)
 
-    ground_truth = read_ground_truth(args.f1)
-    analyzer_results = read_results_file(args.f2)[0]
+    ground_truth = read_ground_truth(args[1][0])
+    analyzer_results = read_results_file(args[1][1])[0]
     compare_results(ground_truth, analyzer_results)
 
-elif args.mode == 'compare':
-    if len(argv) != 6:
+elif args[0].mode == 'compare':
+    if len(args[1]) != 2:
         print(
-            'python3 evaluate_analyzer.py compare' +
-            '-f1 results_file_1.txt -f2 results_file_2.txt'
+            'python3 evaluate_analyzer.py compare results_1.txt results_2.txt'
         )
         exit(1)
 
-    ground_truth, old_runtimes = read_results_file(args.f1)
-    analyzer_results, new_runtimes = read_results_file(args.f2)
+    ground_truth, old_runtimes = read_results_file(args[1][0])
+    analyzer_results, new_runtimes = read_results_file(args[1][1])
     compare_results(ground_truth, analyzer_results)
 
-    print('Runtimes F1:')
+    print('Runtimes 1:')
     print_runtimes(np.array(ground_truth), np.array(old_runtimes))
-    print('Runtimes F2:')
+    print('Runtimes 2:')
     print_runtimes(np.array(analyzer_results), np.array(new_runtimes))
 
-
-elif args.mode == 'evaluate':
-    if len(argv) != 4:
+elif args[0].mode == 'evaluate':
+    if len(args[1]) != 1:
         print(
-            'python3 evaluate_analyzer.py evaluate -f1 results_file.txt'
+            'python3 evaluate_analyzer.py evaluate results.txt'
         )
         exit(1)
 
-    analyzer_results, runtimes = read_results_file(args.f1)
+    analyzer_results, runtimes = read_results_file(args[1][0])
     eval_results = Counter(analyzer_results)
+
+    print()
     print('verified:     ', eval_results[1])
     print('not verified: ', eval_results[0])
     print('misclassified:', eval_results[None])
     print()
+    print('Runtimes:')
     print_runtimes(np.array(analyzer_results), np.array(runtimes))
 
 else:
