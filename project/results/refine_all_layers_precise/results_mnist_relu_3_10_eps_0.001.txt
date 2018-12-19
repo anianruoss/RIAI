@@ -1,201 +1,201 @@
 verified
-analysis time:  0.03129386901855469  seconds
+analysis time:  0.07693290710449219  seconds
 verified
-analysis time:  0.03850579261779785  seconds
+analysis time:  0.07844138145446777  seconds
 verified
-analysis time:  0.04269671440124512  seconds
+analysis time:  0.04713916778564453  seconds
 verified
-analysis time:  0.04175972938537598  seconds
+analysis time:  0.08503174781799316  seconds
 verified
-analysis time:  0.04531502723693848  seconds
+analysis time:  0.08705425262451172  seconds
 verified
-analysis time:  0.0408778190612793  seconds
+analysis time:  0.057428836822509766  seconds
 verified
-analysis time:  0.038724660873413086  seconds
+analysis time:  0.05722761154174805  seconds
 verified
-analysis time:  0.04598689079284668  seconds
+analysis time:  0.05699419975280762  seconds
 image not correctly classified by the network. expected label  5  classified label:  6
-analysis time:  2.2411346435546875e-05  seconds
+analysis time:  2.1219253540039062e-05  seconds
 verified
-analysis time:  0.03854990005493164  seconds
+analysis time:  0.057502031326293945  seconds
 verified
-analysis time:  0.03869056701660156  seconds
+analysis time:  0.05639791488647461  seconds
 verified
-analysis time:  0.0400848388671875  seconds
+analysis time:  0.05661368370056152  seconds
 verified
-analysis time:  0.03948974609375  seconds
+analysis time:  0.057041168212890625  seconds
 verified
-analysis time:  0.03906607627868652  seconds
+analysis time:  0.05692791938781738  seconds
 verified
-analysis time:  0.043920040130615234  seconds
+analysis time:  0.03681325912475586  seconds
 verified
-analysis time:  0.03612399101257324  seconds
+analysis time:  0.036628007888793945  seconds
 verified
-analysis time:  0.03988146781921387  seconds
+analysis time:  0.05766415596008301  seconds
 verified
-analysis time:  0.038480520248413086  seconds
+analysis time:  0.05723881721496582  seconds
 image not correctly classified by the network. expected label  3  classified label:  8
-analysis time:  2.0265579223632812e-05  seconds
+analysis time:  1.9788742065429688e-05  seconds
 verified
-analysis time:  0.04456973075866699  seconds
+analysis time:  0.06724286079406738  seconds
 verified
-analysis time:  0.04250192642211914  seconds
+analysis time:  0.05730390548706055  seconds
 verified
-analysis time:  0.040387868881225586  seconds
+analysis time:  0.05961942672729492  seconds
 verified
-analysis time:  0.04693412780761719  seconds
+analysis time:  0.057576656341552734  seconds
 verified
-analysis time:  0.04613924026489258  seconds
+analysis time:  0.05727195739746094  seconds
 verified
-analysis time:  0.04066967964172363  seconds
+analysis time:  0.05650615692138672  seconds
 verified
-analysis time:  0.048013925552368164  seconds
+analysis time:  0.046552181243896484  seconds
 verified
-analysis time:  0.05262017250061035  seconds
+analysis time:  0.05753636360168457  seconds
 verified
-analysis time:  0.036742448806762695  seconds
+analysis time:  0.05345749855041504  seconds
 verified
-analysis time:  0.03874826431274414  seconds
+analysis time:  0.05705857276916504  seconds
 verified
-analysis time:  0.04217386245727539  seconds
+analysis time:  0.0570673942565918  seconds
 verified
-analysis time:  0.04055666923522949  seconds
+analysis time:  0.05669856071472168  seconds
 verified
-analysis time:  0.030511140823364258  seconds
+analysis time:  0.057074785232543945  seconds
 verified
-analysis time:  0.040529727935791016  seconds
+analysis time:  0.056879281997680664  seconds
 image not correctly classified by the network. expected label  4  classified label:  6
-analysis time:  2.09808349609375e-05  seconds
+analysis time:  2.2649765014648438e-05  seconds
 verified
-analysis time:  0.05249142646789551  seconds
+analysis time:  0.07775545120239258  seconds
 verified
-analysis time:  0.03978681564331055  seconds
+analysis time:  0.057221174240112305  seconds
 verified
-analysis time:  0.04003024101257324  seconds
+analysis time:  0.05667996406555176  seconds
 verified
-analysis time:  0.04324173927307129  seconds
+analysis time:  0.0673379898071289  seconds
 image not correctly classified by the network. expected label  2  classified label:  3
-analysis time:  2.4080276489257812e-05  seconds
+analysis time:  2.1457672119140625e-05  seconds
 verified
-analysis time:  0.04012560844421387  seconds
+analysis time:  0.06624579429626465  seconds
 verified
-analysis time:  0.039984703063964844  seconds
+analysis time:  0.05625295639038086  seconds
 verified
-analysis time:  0.04313063621520996  seconds
+analysis time:  0.048944950103759766  seconds
 image not correctly classified by the network. expected label  4  classified label:  9
-analysis time:  2.0742416381835938e-05  seconds
+analysis time:  2.0503997802734375e-05  seconds
 verified
-analysis time:  0.03928661346435547  seconds
+analysis time:  0.0545504093170166  seconds
 verified
-analysis time:  0.03791356086730957  seconds
+analysis time:  0.056571245193481445  seconds
 verified
-analysis time:  0.028666019439697266  seconds
+analysis time:  0.056966543197631836  seconds
 verified
-analysis time:  0.06851816177368164  seconds
+analysis time:  0.051827192306518555  seconds
 verified
-analysis time:  0.028347253799438477  seconds
+analysis time:  0.0673058032989502  seconds
 verified
-analysis time:  0.04718208312988281  seconds
+analysis time:  0.0366368293762207  seconds
 verified
-analysis time:  0.04161477088928223  seconds
+analysis time:  0.05851387977600098  seconds
 verified
-analysis time:  0.04320955276489258  seconds
+analysis time:  0.057332515716552734  seconds
 verified
-analysis time:  0.055776357650756836  seconds
+analysis time:  0.0570371150970459  seconds
 verified
-analysis time:  0.04172348976135254  seconds
+analysis time:  0.046358346939086914  seconds
 verified
-analysis time:  0.039864540100097656  seconds
+analysis time:  0.03678560256958008  seconds
 verified
-analysis time:  0.04357314109802246  seconds
+analysis time:  0.0568232536315918  seconds
 verified
-analysis time:  0.05205130577087402  seconds
+analysis time:  0.05666947364807129  seconds
 verified
-analysis time:  0.03830218315124512  seconds
+analysis time:  0.056303977966308594  seconds
 verified
-analysis time:  0.03951144218444824  seconds
+analysis time:  0.05685830116271973  seconds
 verified
-analysis time:  0.05244088172912598  seconds
+analysis time:  0.04317116737365723  seconds
 verified
-analysis time:  0.04315972328186035  seconds
+analysis time:  0.05701756477355957  seconds
 verified
-analysis time:  0.03830385208129883  seconds
+analysis time:  0.05296063423156738  seconds
 verified
-analysis time:  0.03885984420776367  seconds
+analysis time:  0.05630922317504883  seconds
 verified
-analysis time:  0.03901505470275879  seconds
+analysis time:  0.04712247848510742  seconds
 verified
-analysis time:  0.04120683670043945  seconds
+analysis time:  0.036858558654785156  seconds
 verified
-analysis time:  0.048558950424194336  seconds
+analysis time:  0.05660390853881836  seconds
 verified
-analysis time:  0.038851022720336914  seconds
+analysis time:  0.05683135986328125  seconds
 verified
-analysis time:  0.06305480003356934  seconds
+analysis time:  0.03702998161315918  seconds
 verified
-analysis time:  0.03867459297180176  seconds
+analysis time:  0.026889562606811523  seconds
 verified
-analysis time:  0.052556753158569336  seconds
+analysis time:  0.03650665283203125  seconds
 verified
-analysis time:  0.0389101505279541  seconds
+analysis time:  0.037212371826171875  seconds
 verified
-analysis time:  0.03873944282531738  seconds
+analysis time:  0.026927471160888672  seconds
 verified
-analysis time:  0.03814053535461426  seconds
+analysis time:  0.03643989562988281  seconds
 verified
-analysis time:  0.038268089294433594  seconds
+analysis time:  0.05447649955749512  seconds
 verified
-analysis time:  0.03881525993347168  seconds
+analysis time:  0.03712034225463867  seconds
 verified
-analysis time:  0.057660818099975586  seconds
+analysis time:  0.037639617919921875  seconds
 verified
-analysis time:  0.03838396072387695  seconds
+analysis time:  0.03675436973571777  seconds
 verified
-analysis time:  0.040375709533691406  seconds
+analysis time:  0.03641104698181152  seconds
 verified
-analysis time:  0.03827047348022461  seconds
+analysis time:  0.0371854305267334  seconds
 verified
-analysis time:  0.03976082801818848  seconds
+analysis time:  0.02662968635559082  seconds
 verified
-analysis time:  0.05247855186462402  seconds
+analysis time:  0.0369718074798584  seconds
 verified
-analysis time:  0.03849363327026367  seconds
+analysis time:  0.03749370574951172  seconds
 verified
-analysis time:  0.04355978965759277  seconds
+analysis time:  0.0364375114440918  seconds
 verified
-analysis time:  0.038609981536865234  seconds
+analysis time:  0.03747916221618652  seconds
 verified
-analysis time:  0.05151844024658203  seconds
+analysis time:  0.02642226219177246  seconds
 verified
-analysis time:  0.03861737251281738  seconds
+analysis time:  0.0265195369720459  seconds
 verified
-analysis time:  0.04046225547790527  seconds
+analysis time:  0.03674054145812988  seconds
 verified
-analysis time:  0.03827381134033203  seconds
+analysis time:  0.03713846206665039  seconds
 image not correctly classified by the network. expected label  3  classified label:  5
-analysis time:  2.193450927734375e-05  seconds
+analysis time:  2.1457672119140625e-05  seconds
 verified
-analysis time:  0.057158708572387695  seconds
+analysis time:  0.03656005859375  seconds
 verified
-analysis time:  0.03855252265930176  seconds
+analysis time:  0.07135295867919922  seconds
 verified
-analysis time:  0.04281282424926758  seconds
+analysis time:  0.03693127632141113  seconds
 verified
-analysis time:  0.029036283493041992  seconds
+analysis time:  0.05704760551452637  seconds
 Academic license - for non-commercial use only
 verified
-analysis time:  0.10071849822998047  seconds
+analysis time:  0.21757745742797852  seconds
 verified
-analysis time:  0.03872370719909668  seconds
+analysis time:  0.05706453323364258  seconds
 verified
-analysis time:  0.047698974609375  seconds
+analysis time:  0.06049633026123047  seconds
 verified
-analysis time:  0.050560951232910156  seconds
+analysis time:  0.06643366813659668  seconds
 verified
-analysis time:  0.0280153751373291  seconds
+analysis time:  0.05681037902832031  seconds
 verified
-analysis time:  0.0383150577545166  seconds
+analysis time:  0.05839347839355469  seconds
 verified
-analysis time:  0.040395498275756836  seconds
+analysis time:  0.03968048095703125  seconds
 verified
-analysis time:  0.055755615234375  seconds
+analysis time:  0.05695986747741699  seconds

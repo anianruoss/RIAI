@@ -1,298 +1,298 @@
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  10.489229440689087  seconds
+analysis time:  2.724350929260254  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  19.801600456237793  seconds
+analysis time:  3.9089605808258057  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  6.91841721534729  seconds
+analysis time:  4.58279824256897  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.8383257389068604  seconds
+analysis time:  3.739912271499634  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  4.002906322479248  seconds
+analysis time:  4.028745412826538  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  4.224124193191528  seconds
+analysis time:  4.091882228851318  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  4.30654501914978  seconds
+analysis time:  4.387123346328735  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  4.480457067489624  seconds
+analysis time:  6.052261114120483  seconds
 image not correctly classified by the network. expected label  5  classified label:  6
-analysis time:  2.09808349609375e-05  seconds
+analysis time:  1.9788742065429688e-05  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.953845977783203  seconds
+analysis time:  3.6902997493743896  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.462360143661499  seconds
+analysis time:  3.450157642364502  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.9406328201293945  seconds
+analysis time:  6.126192808151245  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.9669501781463623  seconds
+analysis time:  5.944557189941406  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.298724889755249  seconds
+analysis time:  4.434826850891113  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  4.032185077667236  seconds
+analysis time:  5.174980163574219  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  10.345372915267944  seconds
+analysis time:  5.330120325088501  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  15.212801456451416  seconds
+analysis time:  5.16869330406189  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  11.136138677597046  seconds
+analysis time:  3.7046585083007812  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  4.147103548049927  seconds
+analysis time:  3.774200201034546  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.389820098876953  seconds
+analysis time:  4.318453073501587  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.7450802326202393  seconds
+analysis time:  3.6084539890289307  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.14825439453125  seconds
+analysis time:  4.201476573944092  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.107855796813965  seconds
+analysis time:  3.648293972015381  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.015235662460327  seconds
+analysis time:  3.837204933166504  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.408773899078369  seconds
+analysis time:  4.289118528366089  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  1.9331681728363037  seconds
+analysis time:  2.35805344581604  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.8289902210235596  seconds
+analysis time:  3.938300132751465  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.9721832275390625  seconds
+analysis time:  3.955728769302368  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.111415147781372  seconds
+analysis time:  2.921513080596924  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.0232529640197754  seconds
+analysis time:  4.287491798400879  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.731989622116089  seconds
+analysis time:  3.881317138671875  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.0405664443969727  seconds
+analysis time:  5.038935899734497  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.4163944721221924  seconds
+analysis time:  4.179764747619629  seconds
 image not correctly classified by the network. expected label  4  classified label:  0
-analysis time:  2.1457672119140625e-05  seconds
+analysis time:  2.193450927734375e-05  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.4206883907318115  seconds
+analysis time:  3.586026191711426  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.342778444290161  seconds
+analysis time:  3.8699288368225098  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.7396209239959717  seconds
+analysis time:  4.705547094345093  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.1068992614746094  seconds
+analysis time:  4.358276128768921  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.2230327129364014  seconds
+analysis time:  4.209261417388916  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.238903045654297  seconds
+analysis time:  3.8788485527038574  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  4.215796232223511  seconds
+analysis time:  4.523368835449219  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  4.005984306335449  seconds
+analysis time:  3.968243360519409  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.8260202407836914  seconds
+analysis time:  3.6684272289276123  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.3514304161071777  seconds
+analysis time:  3.9149844646453857  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.8491597175598145  seconds
+analysis time:  3.930133581161499  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.951849937438965  seconds
+analysis time:  4.182092189788818  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.4009499549865723  seconds
+analysis time:  4.278627634048462  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.4659810066223145  seconds
+analysis time:  4.920180320739746  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.344207763671875  seconds
+analysis time:  3.8729546070098877  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.4086899757385254  seconds
+analysis time:  3.6685638427734375  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.6133508682250977  seconds
+analysis time:  4.063934803009033  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.5905070304870605  seconds
+analysis time:  4.442455530166626  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.024226665496826  seconds
+analysis time:  4.337143659591675  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.920332193374634  seconds
+analysis time:  5.565201759338379  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.2302486896514893  seconds
+analysis time:  9.101020097732544  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.7311625480651855  seconds
+analysis time:  4.3995771408081055  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.374892234802246  seconds
+analysis time:  3.919956922531128  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.023592233657837  seconds
+analysis time:  5.122318267822266  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.461583375930786  seconds
+analysis time:  3.9578843116760254  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.9845941066741943  seconds
+analysis time:  4.7422637939453125  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.206589937210083  seconds
+analysis time:  3.541966438293457  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.472093343734741  seconds
+analysis time:  4.192798614501953  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.0973644256591797  seconds
+analysis time:  4.734418869018555  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.980487823486328  seconds
+analysis time:  4.534761428833008  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.764399528503418  seconds
+analysis time:  4.520137786865234  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.111118793487549  seconds
+analysis time:  5.84636116027832  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.758012533187866  seconds
+analysis time:  5.221566677093506  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.9563982486724854  seconds
+analysis time:  4.789108753204346  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.884413242340088  seconds
+analysis time:  3.9827797412872314  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.513489007949829  seconds
+analysis time:  3.937333106994629  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.7460756301879883  seconds
+analysis time:  4.232131719589233  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.077216386795044  seconds
+analysis time:  3.0408220291137695  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.3750503063201904  seconds
+analysis time:  3.375847816467285  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.0183966159820557  seconds
+analysis time:  4.465709209442139  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.0962815284729004  seconds
+analysis time:  5.421788454055786  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.4173951148986816  seconds
+analysis time:  4.759736776351929  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.074803590774536  seconds
+analysis time:  5.053551435470581  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.684502363204956  seconds
+analysis time:  5.78573751449585  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  5.303728342056274  seconds
+analysis time:  5.407625675201416  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.5465149879455566  seconds
+analysis time:  4.266501426696777  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.306143283843994  seconds
+analysis time:  7.4828972816467285  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.1949691772460938  seconds
+analysis time:  10.007845640182495  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.6298298835754395  seconds
+analysis time:  3.4612858295440674  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.045914649963379  seconds
+analysis time:  4.806710958480835  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.062758445739746  seconds
+analysis time:  4.90023136138916  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.8212063312530518  seconds
+analysis time:  5.368225574493408  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.79801344871521  seconds
+analysis time:  4.978817939758301  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  4.117334604263306  seconds
+analysis time:  6.419417142868042  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.555608034133911  seconds
+analysis time:  5.528029680252075  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  4.6396918296813965  seconds
+analysis time:  7.620805978775024  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  4.131706476211548  seconds
+analysis time:  7.249166011810303  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.237406015396118  seconds
+analysis time:  7.493693828582764  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.7405035495758057  seconds
+analysis time:  7.98965048789978  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.8162782192230225  seconds
+analysis time:  5.209918975830078  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.8448331356048584  seconds
+analysis time:  6.612978219985962  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.6900277137756348  seconds
+analysis time:  5.789724826812744  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.333372116088867  seconds
+analysis time:  7.760920524597168  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  3.3838722705841064  seconds
+analysis time:  6.643517971038818  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.8079826831817627  seconds
+analysis time:  7.112139463424683  seconds
 Academic license - for non-commercial use only
 can not be verified
-analysis time:  2.7753732204437256  seconds
+analysis time:  7.086215496063232  seconds
