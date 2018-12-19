@@ -759,10 +759,6 @@ if __name__ == '__main__':
         if verified_flag:
             print("verified")
         else:
-            verified_flag = refine_last_n_layers(
-                nn, bounds, nn.numlayer - 1, label, precise=True
-            )
-            """
             # choose refinement based on network architecture
             if nn.numlayer == 3:
                 verified_flag = refine_all_layers(
@@ -771,7 +767,9 @@ if __name__ == '__main__':
 
             # TODO: determine cutoff for 4_1024
             elif nn.numlayer == 4:
-                pass
+                verified_flag = refine_first_n_layers(
+                    nn, LB_N0, UB_N0, bounds, 2, label
+                )
 
             elif nn.numlayer == 6:
                 num_hidden = nn.weights[0].shape[0]
@@ -807,22 +805,23 @@ if __name__ == '__main__':
                 verified_flag = refine_all_layers(
                     nn, LB_N0, UB_N0, bounds, label, precise=True
                 )
-            """
 
             if verified_flag:
                 print("verified")
             else:
+                print("can not be verified")
+
                 """
                 # run refine_all_layers as last resort
                 verified_flag = refine_all_layers(
                     nn, LB_N0, UB_N0, bounds, label, precise=True
                 )
-                """
 
                 if verified_flag:
                     print("verified")
                 else:
                     print("can not be verified")
+                """
 
     else:
         print("image not correctly classified by the network. expected label ",
