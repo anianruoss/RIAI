@@ -390,6 +390,217 @@ def refine_all_layers(nn, LB_N0, UB_N0, bounds, label, precise=False):
     return verified_flag
 
 
+def refine_first_n_layers(nn, LB_N0, UB_N0, bounds, num_layers, label,
+                          precise=False):
+    """
+    :type nn: class
+    :param nn: contains information about neural network
+    :type LB_N0: numpy.ndarray
+    :param LB_N0: lower bounds for input pixels
+    :type UB_N0: numpy.ndarray
+    :param UB_N0: upper bounds for input pixels
+    :type bounds: list of dict of list
+    :param bounds: contains box bounds for every layer in the neural network
+    :type num_layers: int
+    :param num_layers: how many layers should be refined
+    :type label: int
+    :param label: ground truth label of image
+    :type precise: bool
+    :param precise: whether to use box bounds for ReLUs of hidden layers or not
+    :rtype: bool
+    :return: whether the robustness could be verified or not
+    """
+    model = Model('RefineFirstN')
+    model.setParam('OutputFlag', False)
+
+    num_input_variables = LB_N0.size
+    input_variables = [None] * num_input_variables
+
+    for idx_var in range(num_input_variables):
+        lb = LB_N0[idx_var]
+        ub = UB_N0[idx_var]
+        input_variables[idx_var] = model.addVar(lb=lb, ub=ub)
+
+    model.update()
+
+    relu_variables = input_variables
+
+    # propagate epsilon-ball with linear solver
+    for idx_layer in range(num_layers):
+        weights = nn.weights[idx_layer]
+        biases = nn.biases[idx_layer]
+
+        num_lin_expr = weights.shape[0]
+        lin_expr_vars = [None] * num_lin_expr
+
+        for idx_var in range(num_lin_expr):
+            lin_expr_vars[idx_var] = LinExpr(weights[idx_var], relu_variables)
+            lin_expr_vars[idx_var].addConstant(biases[idx_var])
+
+        model.update()
+
+        if nn.layertypes[idx_layer] == 'ReLU':
+            bounds_curr_layer = bounds[idx_layer]['affine']
+            relu_variables = [None] * num_lin_expr
+
+            for idx_var in range(num_lin_expr):
+                lb, ub = bounds_curr_layer[idx_var]
+
+                if precise and 0. < ub:
+                    model.setObjective(lin_expr_vars[idx_var], GRB.MINIMIZE)
+                    model.optimize()
+                    lb = model.ObjVal
+
+                    # TODO: remove assert
+                    assert model.status == GRB.Status.OPTIMAL
+
+                    model.setObjective(lin_expr_vars[idx_var], GRB.MAXIMIZE)
+                    model.optimize()
+                    ub = model.ObjVal
+
+                    # TODO: remove assert
+                    assert model.status == GRB.Status.OPTIMAL
+
+                if 0. <= lb:
+                    relu_variables[idx_var] = model.addVar(lb=lb, ub=ub)
+                    model.addConstr(
+                        relu_variables[idx_var] ==
+                        lin_expr_vars[idx_var]
+                    )
+                elif ub <= 0.:
+                    relu_variables[idx_var] = model.addVar(lb=0., ub=0.)
+                else:
+                    relu_variables[idx_var] = model.addVar(lb=0.)
+                    lambda_ = ub / (ub - lb)
+                    mu_ = - ub * lb / (ub - lb)
+                    model.addConstr(
+                        relu_variables[idx_var] <=
+                        lambda_ * lin_expr_vars[idx_var] + mu_
+                    )
+                    model.addConstr(
+                        lin_expr_vars[idx_var] <= relu_variables[idx_var]
+                    )
+
+        model.update()
+
+    if nn.layertypes[-1] == 'ReLU':
+        out_variables = relu_variables
+    else:
+        out_variables = lin_expr_vars
+
+    # solve the linear program
+    num_out_vars = len(out_variables)
+    out_bounds = [None] * num_out_vars
+    out_bounds_box = bounds[num_layers - 1]['affine']
+
+    for idx_var in range(num_out_vars):
+        lb, ub = out_bounds_box[idx_var]
+
+        if 0. < ub:
+            model.setObjective(out_variables[idx_var], GRB.MINIMIZE)
+            model.optimize()
+            lb = model.ObjVal
+
+            # TODO: remove assert
+            assert model.status == GRB.Status.OPTIMAL
+
+            model.setObjective(out_variables[idx_var], GRB.MAXIMIZE)
+            model.optimize()
+            ub = model.ObjVal
+
+            # TODO: remove assert
+            assert model.status == GRB.Status.OPTIMAL
+
+        else:
+            lb = 0.
+            ub = 0.
+
+        out_bounds[idx_var] = (lb, ub)
+
+    # propagate epsilon-ball with box
+    man = elina_box_manager_alloc()
+    itv = elina_interval_array_alloc(num_out_vars)
+
+    for i in range(num_out_vars):
+        elina_interval_set_double(itv[i], out_bounds[i][0], out_bounds[i][1])
+
+    # construct input abstraction
+    element = elina_abstract0_of_box(man, 0, num_out_vars, itv)
+    elina_interval_array_free(itv, num_out_vars)
+
+    for idx_layer in range(num_layers, nn.numlayer):
+        if nn.layertypes[idx_layer] in ['ReLU', 'Affine']:
+            weights = nn.weights[idx_layer]
+            biases = nn.biases[idx_layer]
+
+            dims = elina_abstract0_dimension(man, element)
+            num_in_pixels = dims.intdim + dims.realdim
+            num_out_pixels = len(weights)
+
+            dimadd = elina_dimchange_alloc(0, num_out_pixels)
+
+            for i in range(num_out_pixels):
+                dimadd.contents.dim[i] = num_in_pixels
+
+            elina_abstract0_add_dimensions(man, True, element, dimadd, False)
+            elina_dimchange_free(dimadd)
+
+            np.ascontiguousarray(weights, dtype=np.double)
+            np.ascontiguousarray(biases, dtype=np.double)
+            var = num_in_pixels
+
+            # handle affine layer
+            for i in range(num_out_pixels):
+                tdim = ElinaDim(var)
+                linexpr0 = generate_linexpr0(
+                    weights[i], biases[i], num_in_pixels
+                )
+                element = elina_abstract0_assign_linexpr_array(
+                    man, True, element, tdim, linexpr0, 1, None
+                )
+                var += 1
+
+            dimrem = elina_dimchange_alloc(0, num_in_pixels)
+
+            for i in range(num_in_pixels):
+                dimrem.contents.dim[i] = i
+
+            elina_abstract0_remove_dimensions(man, True, element, dimrem)
+            elina_dimchange_free(dimrem)
+
+            # handle ReLU layer
+            if nn.layertypes[idx_layer] == 'ReLU':
+                element = relu_box_layerwise(
+                    man, True, element, 0, num_out_pixels
+                )
+
+        else:
+            print(' net type not supported')
+
+    dims = elina_abstract0_dimension(man, element)
+    output_size = dims.intdim + dims.realdim
+
+    # get bounds for each output neuron
+    bounds = elina_abstract0_to_box(man, element)
+
+    # try to verify robustness
+    verified_flag = True
+    inf = bounds[label].contents.inf.contents.val.dbl
+
+    for j in range(output_size):
+        if j != label:
+            sup = bounds[j].contents.sup.contents.val.dbl
+            if inf <= sup:
+                verified_flag = False
+                break
+
+    elina_interval_array_free(bounds, output_size)
+    elina_abstract0_free(man, element)
+    elina_manager_free(man)
+
+    return verified_flag
+
+
 def refine_last_n_layers(nn, bounds, num_layers, label, precise=False):
     """
     :type nn: class
@@ -548,22 +759,70 @@ if __name__ == '__main__':
         if verified_flag:
             print("verified")
         else:
-            # TODO: heuristic
+            verified_flag = refine_last_n_layers(
+                nn, bounds, nn.numlayer - 1, label, precise=True
+            )
+            """
             # choose refinement based on network architecture
             if nn.numlayer == 3:
                 verified_flag = refine_all_layers(
                     nn, LB_N0, UB_N0, bounds, label, precise=True
                 )
+
+            # TODO: determine cutoff for 4_1024
+            elif nn.numlayer == 4:
+                pass
+
+            elif nn.numlayer == 6:
+                num_hidden = nn.weights[0].shape[0]
+
+                if num_hidden <= 100:
+                    verified_flag = refine_all_layers(
+                        nn, LB_N0, UB_N0, bounds, label, precise=True
+                    )
+                # TODO: determine cutoff for 6_200
+                else:
+                    if epsilon <= 0.01:
+                        verified_flag = refine_all_layers(
+                            nn, LB_N0, UB_N0, bounds, label, precise=True
+                        )
+                    else:
+                        verified_flag = refine_first_n_layers(
+                            nn, LB_N0, UB_N0, bounds, 5, label, precise=True
+                        )
+
+            elif nn.numlayer == 9:
+                # TODO: determine cutoff for 9_100 and 9_200
+                if epsilon <= 0.01:
+                    verified_flag = refine_all_layers(
+                        nn, LB_N0, UB_N0, bounds, label, precise=True
+                    )
+                else:
+                    verified_flag = refine_first_n_layers(
+                        nn, LB_N0, UB_N0, bounds, 5, label, precise=True
+                    )
+
             else:
+                # unknown network architecture
                 verified_flag = refine_all_layers(
                     nn, LB_N0, UB_N0, bounds, label, precise=True
                 )
+            """
 
             if verified_flag:
                 print("verified")
             else:
-                # TODO: run refine_all_layers as last resort
-                print("can not be verified")
+                """
+                # run refine_all_layers as last resort
+                verified_flag = refine_all_layers(
+                    nn, LB_N0, UB_N0, bounds, label, precise=True
+                )
+                """
+
+                if verified_flag:
+                    print("verified")
+                else:
+                    print("can not be verified")
 
     else:
         print("image not correctly classified by the network. expected label ",
