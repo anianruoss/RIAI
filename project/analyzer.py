@@ -407,9 +407,11 @@ def refine_first_n_layers(nn, LB_N0, UB_N0, bounds, num_layers, label,
     :param label: ground truth label of image
     :type precise: bool
     :param precise: whether to use box bounds for ReLUs of hidden layers or not
-    :rtype: bool
-    :return: whether the robustness could be verified or not
+    :rtype: tuple of bool and list
+    :return: whether the robustness could be verified or not and refined bounds
     """
+    refined_bounds = bounds
+
     model = Model('RefineFirstN')
     model.setParam('OutputFlag', False)
 
@@ -460,6 +462,8 @@ def refine_first_n_layers(nn, LB_N0, UB_N0, bounds, num_layers, label,
 
                     # TODO: remove assert
                     assert model.status == GRB.Status.OPTIMAL
+
+                    refined_bounds[idx_layer]['affine'][idx_var] = (lb, ub)
 
                 if 0. <= lb:
                     relu_variables[idx_var] = model.addVar(lb=lb, ub=ub)
@@ -568,6 +572,15 @@ def refine_first_n_layers(nn, LB_N0, UB_N0, bounds, num_layers, label,
             elina_abstract0_remove_dimensions(man, True, element, dimrem)
             elina_dimchange_free(dimrem)
 
+            # add bounds after affine layer
+            bounds = elina_abstract0_to_box(man, element)
+
+            for idx in range(num_out_pixels):
+                refined_bounds[idx_layer]['affine'][idx] = (
+                    bounds[idx].contents.inf.contents.val.dbl,
+                    bounds[idx].contents.sup.contents.val.dbl
+                )
+
             # handle ReLU layer
             if nn.layertypes[idx_layer] == 'ReLU':
                 element = relu_box_layerwise(
@@ -598,7 +611,7 @@ def refine_first_n_layers(nn, LB_N0, UB_N0, bounds, num_layers, label,
     elina_abstract0_free(man, element)
     elina_manager_free(man)
 
-    return verified_flag
+    return verified_flag, refined_bounds
 
 
 def refine_last_n_layers(nn, bounds, num_layers, label, precise=False):
@@ -774,7 +787,7 @@ if __name__ == '__main__':
             elif num_hidden_layers == 4:
                 verified_flag = refine_first_n_layers(
                     nn, LB_N0, UB_N0, bounds, 2, label
-                )
+                )[0]
 
             # networks: [6_20, 6_50, 6_100, 6_200]
             elif num_hidden_layers == 6:
@@ -786,7 +799,7 @@ if __name__ == '__main__':
                 # TODO: determine cutoff for 6_200
                 # networks: [6_200]
                 else:
-                    if epsilon <= 0.01:
+                    if epsilon <= 0.0125:
                         verified_flag = refine_all_layers(
                             nn, LB_N0, UB_N0, bounds, label, precise=True
                         )
@@ -794,7 +807,7 @@ if __name__ == '__main__':
                     else:
                         verified_flag = refine_first_n_layers(
                             nn, LB_N0, UB_N0, bounds, 5, label, precise=True
-                        )
+                        )[0]
 
             # networks: [9_100, 9_200]
             elif num_hidden_layers == 9:
