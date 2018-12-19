@@ -52,10 +52,11 @@ def read_results_file(file_name):
             elif 'analysis time' in line:
                 runtime = float(line.split('time: ')[1].split(' seconds')[0])
                 runtimes.append(runtime)
-                idx += 1
 
                 if 6 * 60 <= runtime:
                     print(f'Image {idx}: LP ran for {runtime / 60} minutes')
+
+                idx += 1
             else:
                 raise RuntimeError('unknown case in analyzer results file')
 
