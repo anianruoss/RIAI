@@ -1,0 +1,212 @@
+verified
+analysis time:  0.45960116386413574  seconds
+verified
+analysis time:  0.45656895637512207  seconds
+verified
+analysis time:  0.5128157138824463  seconds
+verified
+analysis time:  0.5524916648864746  seconds
+verified
+analysis time:  0.4637641906738281  seconds
+verified
+analysis time:  0.4647483825683594  seconds
+verified
+analysis time:  0.4542825222015381  seconds
+verified
+analysis time:  0.4889209270477295  seconds
+image not correctly classified by the network. expected label  5  classified label:  6
+analysis time:  1.8596649169921875e-05  seconds
+verified
+analysis time:  0.5235726833343506  seconds
+verified
+analysis time:  0.4705829620361328  seconds
+verified
+analysis time:  0.4892716407775879  seconds
+verified
+analysis time:  0.4735894203186035  seconds
+verified
+analysis time:  0.6419093608856201  seconds
+verified
+analysis time:  0.461467981338501  seconds
+Academic license - for non-commercial use only
+verified
+analysis time:  1.031557321548462  seconds
+verified
+analysis time:  0.3799927234649658  seconds
+verified
+analysis time:  0.32450437545776367  seconds
+Academic license - for non-commercial use only
+verified
+analysis time:  0.855950117111206  seconds
+verified
+analysis time:  0.3437020778656006  seconds
+verified
+analysis time:  0.2990689277648926  seconds
+verified
+analysis time:  0.29848504066467285  seconds
+verified
+analysis time:  0.3388862609863281  seconds
+verified
+analysis time:  0.33743834495544434  seconds
+verified
+analysis time:  0.27765631675720215  seconds
+verified
+analysis time:  0.2920851707458496  seconds
+verified
+analysis time:  0.27652788162231445  seconds
+verified
+analysis time:  0.29317665100097656  seconds
+verified
+analysis time:  0.31510353088378906  seconds
+verified
+analysis time:  0.29164648056030273  seconds
+verified
+analysis time:  0.4340364933013916  seconds
+verified
+analysis time:  0.3028566837310791  seconds
+verified
+analysis time:  0.36075878143310547  seconds
+image not correctly classified by the network. expected label  4  classified label:  6
+analysis time:  1.9788742065429688e-05  seconds
+verified
+analysis time:  0.33285975456237793  seconds
+Academic license - for non-commercial use only
+verified
+analysis time:  0.7265076637268066  seconds
+verified
+analysis time:  0.29672956466674805  seconds
+verified
+analysis time:  0.3158102035522461  seconds
+Academic license - for non-commercial use only
+verified
+analysis time:  1.152069330215454  seconds
+verified
+analysis time:  0.3561391830444336  seconds
+verified
+analysis time:  0.3629150390625  seconds
+Academic license - for non-commercial use only
+verified
+analysis time:  0.8816142082214355  seconds
+verified
+analysis time:  0.27766895294189453  seconds
+Academic license - for non-commercial use only
+verified
+analysis time:  0.983727216720581  seconds
+verified
+analysis time:  0.27735018730163574  seconds
+verified
+analysis time:  0.2657299041748047  seconds
+Academic license - for non-commercial use only
+verified
+analysis time:  0.9385428428649902  seconds
+verified
+analysis time:  0.2718977928161621  seconds
+verified
+analysis time:  0.29754161834716797  seconds
+verified
+analysis time:  0.2610747814178467  seconds
+verified
+analysis time:  0.2751765251159668  seconds
+verified
+analysis time:  0.36345577239990234  seconds
+verified
+analysis time:  0.2797536849975586  seconds
+Academic license - for non-commercial use only
+verified
+analysis time:  0.7723584175109863  seconds
+verified
+analysis time:  0.28899121284484863  seconds
+verified
+analysis time:  0.2884409427642822  seconds
+verified
+analysis time:  0.2879769802093506  seconds
+verified
+analysis time:  0.28606247901916504  seconds
+verified
+analysis time:  0.2900857925415039  seconds
+verified
+analysis time:  0.2705979347229004  seconds
+verified
+analysis time:  0.260817289352417  seconds
+image not correctly classified by the network. expected label  8  classified label:  2
+analysis time:  1.9788742065429688e-05  seconds
+image not correctly classified by the network. expected label  9  classified label:  4
+analysis time:  2.0503997802734375e-05  seconds
+Academic license - for non-commercial use only
+verified
+analysis time:  0.7312581539154053  seconds
+verified
+analysis time:  0.17508792877197266  seconds
+verified
+analysis time:  0.18180608749389648  seconds
+verified
+analysis time:  0.17289328575134277  seconds
+verified
+analysis time:  0.18249249458312988  seconds
+verified
+analysis time:  0.1745774745941162  seconds
+verified
+analysis time:  0.1854393482208252  seconds
+verified
+analysis time:  0.17487120628356934  seconds
+verified
+analysis time:  0.19002676010131836  seconds
+verified
+analysis time:  0.1887505054473877  seconds
+verified
+analysis time:  0.2897322177886963  seconds
+verified
+analysis time:  0.3247518539428711  seconds
+Academic license - for non-commercial use only
+verified
+analysis time:  0.8990993499755859  seconds
+verified
+analysis time:  0.261981725692749  seconds
+verified
+analysis time:  0.1963508129119873  seconds
+Academic license - for non-commercial use only
+verified
+analysis time:  0.4810822010040283  seconds
+verified
+analysis time:  0.20776629447937012  seconds
+verified
+analysis time:  0.1994609832763672  seconds
+verified
+analysis time:  0.19721746444702148  seconds
+verified
+analysis time:  0.1832118034362793  seconds
+verified
+analysis time:  0.18410158157348633  seconds
+verified
+analysis time:  0.30930447578430176  seconds
+verified
+analysis time:  0.30537843704223633  seconds
+verified
+analysis time:  0.3037533760070801  seconds
+verified
+analysis time:  0.29241299629211426  seconds
+verified
+analysis time:  0.2823042869567871  seconds
+verified
+analysis time:  0.27033114433288574  seconds
+verified
+analysis time:  0.2630021572113037  seconds
+verified
+analysis time:  0.2625577449798584  seconds
+image not correctly classified by the network. expected label  9  classified label:  4
+analysis time:  1.8596649169921875e-05  seconds
+verified
+analysis time:  0.28714919090270996  seconds
+verified
+analysis time:  0.327239990234375  seconds
+verified
+analysis time:  0.30097484588623047  seconds
+Academic license - for non-commercial use only
+verified
+analysis time:  1.1533992290496826  seconds
+verified
+analysis time:  0.3525559902191162  seconds
+verified
+analysis time:  0.2822563648223877  seconds
+verified
+analysis time:  0.2904994487762451  seconds
