@@ -760,44 +760,61 @@ if __name__ == '__main__':
             print("verified")
         else:
             # choose refinement based on network architecture
-            if nn.numlayer == 3:
+            num_hidden_layers = nn.numlayer
+            num_neurons_per_layer = nn.weights[0].shape[0]
+
+            # networks: [3_10, 3_20, 3_50]
+            if num_hidden_layers == 3:
                 verified_flag = refine_all_layers(
                     nn, LB_N0, UB_N0, bounds, label, precise=True
                 )
 
-            # TODO: determine cutoff for 4_1024
-            elif nn.numlayer == 4:
+            # TODO: determine strategy for 4_1024
+            # networks: [4_1024]
+            elif num_hidden_layers == 4:
                 verified_flag = refine_first_n_layers(
                     nn, LB_N0, UB_N0, bounds, 2, label
                 )
 
-            elif nn.numlayer == 6:
-                num_hidden = nn.weights[0].shape[0]
-
-                if num_hidden <= 100:
+            # networks: [6_20, 6_50, 6_100, 6_200]
+            elif num_hidden_layers == 6:
+                # networks: [6_20, 6_50, 6_100]
+                if num_neurons_per_layer <= 100:
                     verified_flag = refine_all_layers(
                         nn, LB_N0, UB_N0, bounds, label, precise=True
                     )
                 # TODO: determine cutoff for 6_200
+                # networks: [6_200]
                 else:
                     if epsilon <= 0.01:
                         verified_flag = refine_all_layers(
                             nn, LB_N0, UB_N0, bounds, label, precise=True
                         )
+                    # TODO: determine strategy for large epsilons
                     else:
                         verified_flag = refine_first_n_layers(
                             nn, LB_N0, UB_N0, bounds, 5, label, precise=True
                         )
 
-            elif nn.numlayer == 9:
-                # TODO: determine cutoff for 9_100 and 9_200
-                if epsilon <= 0.01:
+            # networks: [9_100, 9_200]
+            elif num_hidden_layers == 9:
+                # TODO: determine cutoff for 9_100
+                # networks: [9_100]
+                if num_neurons_per_layer <= 100:
+                    if epsilon <= 0.0125:
+                        verified_flag = refine_all_layers(
+                            nn, LB_N0, UB_N0, bounds, label, precise=True
+                        )
+                    # TODO: determine strategy for large epsilons
+                    else:
+                        verified_flag = refine_all_layers(
+                            nn, LB_N0, UB_N0, bounds, label, precise=True
+                        )
+                # TODO: determine cutoff for 9_200
+                # networks: [9_200]
+                else:
                     verified_flag = refine_all_layers(
                         nn, LB_N0, UB_N0, bounds, label, precise=True
-                    )
-                else:
-                    verified_flag = refine_first_n_layers(
-                        nn, LB_N0, UB_N0, bounds, 5, label, precise=True
                     )
 
             else:
