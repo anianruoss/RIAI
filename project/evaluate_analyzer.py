@@ -49,6 +49,11 @@ def read_results_file(file_name):
                 analyzer_results.append(1)
             elif line == 'can not be verified\n':
                 analyzer_results.append(0)
+            elif 'timed out' in line:
+                analyzer_results.append(0)
+                runtimes.append(8 * 60)
+                print(f'Image {idx}: timed out')
+                idx += 1
             elif 'analysis time' in line:
                 runtime = float(line.split('time: ')[1].split(' seconds')[0])
                 runtimes.append(runtime)
