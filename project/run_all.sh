@@ -2,10 +2,10 @@
 
 while getopts n:e: option
 do
-	case ${option} in
-		n) NET=${OPTARG};;
-		e) EPS=${OPTARG};;
-	esac
+    case ${option} in
+        n) NET=${OPTARG};;
+        e) EPS=${OPTARG};;
+    esac
 done
 
 NET_NAME=$(cut -d '/' -f 3 <<< ${NET})
@@ -16,5 +16,5 @@ rm ${RESULTS_FILE} 2>/dev/null || true
 
 for i in {0..99}
 do
-	python3 analyzer.py ${NET} ../mnist_images/img${i}.txt ${EPS} >> ${RESULTS_FILE}
+    timeout -s 'ABRT' 8m python3 analyzer.py ${NET} ../mnist_images/img${i}.txt ${EPS} >> ${RESULTS_FILE}
 done
