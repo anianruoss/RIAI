@@ -16,5 +16,5 @@ rm ${RESULTS_FILE} 2>/dev/null || true
 
 for i in {0..99}
 do
-    timeout 8m python3 analyzer.py ${NET} ../mnist_images/img${i}.txt ${EPS} >> ${RESULTS_FILE}; [ $? -eq 124 ] && echo Analyzer timed out! >> ${RESULTS_FILE}
+    timeout 11m python3 analyzer.py ${NET} ../mnist_images/img${i}.txt ${EPS} >> ${RESULTS_FILE}; [ $? -eq 124 ] && echo Analyzer timed out! >> ${RESULTS_FILE}
 done
