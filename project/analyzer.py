@@ -811,10 +811,9 @@ if __name__ == '__main__':
 
             # networks: [9_100, 9_200]
             elif num_hidden_layers == 9:
-                # TODO: determine cutoff for 9_100
                 # networks: [9_100]
                 if num_neurons_per_layer <= 100:
-                    if epsilon <= 0.0125:
+                    if epsilon <= 0.02:
                         verified_flag = refine_all_layers(
                             nn, LB_N0, UB_N0, bounds, label, precise=True
                         )
@@ -830,8 +829,8 @@ if __name__ == '__main__':
                         nn, LB_N0, UB_N0, bounds, label, precise=True
                     )
 
+            # unknown network architecture
             else:
-                # unknown network architecture
                 verified_flag = refine_all_layers(
                     nn, LB_N0, UB_N0, bounds, label, precise=True
                 )
@@ -839,19 +838,17 @@ if __name__ == '__main__':
             if verified_flag:
                 print("verified")
             else:
-                print("can not be verified")
-
                 """
                 # run refine_all_layers as last resort
                 verified_flag = refine_all_layers(
                     nn, LB_N0, UB_N0, bounds, label, precise=True
                 )
+                """
 
                 if verified_flag:
                     print("verified")
                 else:
                     print("can not be verified")
-                """
 
     else:
         print("image not correctly classified by the network. expected label ",
