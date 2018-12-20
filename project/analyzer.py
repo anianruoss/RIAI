@@ -789,6 +789,12 @@ if __name__ == '__main__':
                     nn, LB_N0, UB_N0, bounds, 2, label
                 )
 
+                if not verified_flag:
+                    print('last')
+                    verified_flag = refine_last_n_layers(
+                        nn, bounds, 2, label, precise=True
+                    )
+
             # networks: [6_20, 6_50, 6_100, 6_200]
             elif num_hidden_layers == 6:
                 # networks: [6_20, 6_50, 6_100]
@@ -805,9 +811,15 @@ if __name__ == '__main__':
                         )
                     # TODO: determine strategy for large epsilons
                     else:
-                        verified_flag = refine_first_n_layers(
-                            nn, LB_N0, UB_N0, bounds, 5, label, precise=True
-                        )[0]
+                        verified_flag, bounds = refine_first_n_layers(
+                            nn, LB_N0, UB_N0, bounds, 4, label, precise=True
+                        )
+
+                        if not verified_flag:
+                            print('last')
+                            verified_flag = refine_last_n_layers(
+                                nn, bounds, 2, label, precise=True
+                            )
 
             # networks: [9_100, 9_200]
             elif num_hidden_layers == 9:
@@ -831,11 +843,24 @@ if __name__ == '__main__':
                             nn, LB_N0, UB_N0, bounds, label, precise=True
                         )
                     # TODO: determine strategy for large epsilons
+                    elif epsilon <= 0.02:
+                        verified_flag, bounds = refine_first_n_layers(
+                            nn, LB_N0, UB_N0, bounds, 7, label, precise=True
+                        )
+
+                        if not verified_flag:
+                            verified_flag = refine_last_n_layers(
+                                nn, bounds, 2, label, precise=True
+                            )
                     else:
-                        verified_flag = refine_first_n_layers(
-                            nn, LB_N0, UB_N0, bounds, num_hidden_layers - 1,
-                            label, precise=True
-                        )[0]
+                        verified_flag, bounds = refine_first_n_layers(
+                            nn, LB_N0, UB_N0, bounds, 4, label, precise=True
+                        )
+
+                        if not verified_flag:
+                            verified_flag = refine_last_n_layers(
+                                nn, bounds, 2, label, precise=True
+                            )
 
             # unknown network architecture
             else:
