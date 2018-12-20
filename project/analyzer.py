@@ -785,9 +785,9 @@ if __name__ == '__main__':
             # TODO: determine strategy for 4_1024
             # networks: [4_1024]
             elif num_hidden_layers == 4:
-                verified_flag = refine_first_n_layers(
+                verified_flag, bounds = refine_first_n_layers(
                     nn, LB_N0, UB_N0, bounds, 2, label
-                )[0]
+                )
 
             # networks: [6_20, 6_50, 6_100, 6_200]
             elif num_hidden_layers == 6:
@@ -819,15 +819,23 @@ if __name__ == '__main__':
                         )
                     # TODO: determine strategy for large epsilons
                     else:
+                        verified_flag = refine_first_n_layers(
+                            nn, LB_N0, UB_N0, bounds, num_hidden_layers - 1,
+                            label, precise=True
+                        )[0]
+
+                # networks: [9_200]
+                else:
+                    if epsilon <= 0.0125:
                         verified_flag = refine_all_layers(
                             nn, LB_N0, UB_N0, bounds, label, precise=True
                         )
-                # TODO: determine cutoff for 9_200
-                # networks: [9_200]
-                else:
-                    verified_flag = refine_all_layers(
-                        nn, LB_N0, UB_N0, bounds, label, precise=True
-                    )
+                    # TODO: determine strategy for large epsilons
+                    else:
+                        verified_flag = refine_first_n_layers(
+                            nn, LB_N0, UB_N0, bounds, num_hidden_layers - 1,
+                            label, precise=True
+                        )[0]
 
             # unknown network architecture
             else:
