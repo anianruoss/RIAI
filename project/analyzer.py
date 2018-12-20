@@ -332,15 +332,9 @@ def refine_all_layers(nn, LB_N0, UB_N0, bounds, label, precise=False):
                     model.optimize()
                     lb = model.ObjVal
 
-                    # TODO: remove assert
-                    assert model.status == GRB.Status.OPTIMAL
-
                     model.setObjective(lin_expr_vars[idx_var], GRB.MAXIMIZE)
                     model.optimize()
                     ub = model.ObjVal
-
-                    # TODO: remove assert
-                    assert model.status == GRB.Status.OPTIMAL
 
                 if 0. <= lb:
                     relu_variables[idx_var] = model.addVar(lb=lb, ub=ub)
@@ -379,9 +373,6 @@ def refine_all_layers(nn, LB_N0, UB_N0, bounds, label, precise=False):
                 out_variables[label] - out_variables[idx_var], GRB.MINIMIZE
             )
             model.optimize()
-
-            # TODO: remove assert
-            assert model.status == GRB.Status.OPTIMAL
 
             if model.ObjVal <= 0.:
                 verified_flag = False
@@ -453,15 +444,9 @@ def refine_first_n_layers(nn, LB_N0, UB_N0, bounds, num_layers, label,
                     model.optimize()
                     lb = model.ObjVal
 
-                    # TODO: remove assert
-                    assert model.status == GRB.Status.OPTIMAL
-
                     model.setObjective(lin_expr_vars[idx_var], GRB.MAXIMIZE)
                     model.optimize()
                     ub = model.ObjVal
-
-                    # TODO: remove assert
-                    assert model.status == GRB.Status.OPTIMAL
 
                     refined_bounds[idx_layer]['affine'][idx_var] = (lb, ub)
 
@@ -505,15 +490,9 @@ def refine_first_n_layers(nn, LB_N0, UB_N0, bounds, num_layers, label,
             model.optimize()
             lb = model.ObjVal
 
-            # TODO: remove assert
-            assert model.status == GRB.Status.OPTIMAL
-
             model.setObjective(out_variables[idx_var], GRB.MAXIMIZE)
             model.optimize()
             ub = model.ObjVal
-
-            # TODO: remove assert
-            assert model.status == GRB.Status.OPTIMAL
 
         else:
             lb = 0.
@@ -684,15 +663,9 @@ def refine_last_n_layers(nn, bounds, num_layers, label, precise=False):
                     model.optimize()
                     lb = model.ObjVal
 
-                    # TODO: remove assert
-                    assert model.status == GRB.Status.OPTIMAL
-
                     model.setObjective(lin_expr_vars[idx_var], GRB.MAXIMIZE)
                     model.optimize()
                     ub = model.ObjVal
-
-                    # TODO: remove assert
-                    assert model.status == GRB.Status.OPTIMAL
 
                 if 0. <= lb:
                     relu_variables[idx_var] = model.addVar(lb=lb, ub=ub)
@@ -731,9 +704,6 @@ def refine_last_n_layers(nn, bounds, num_layers, label, precise=False):
                 out_variables[label] - out_variables[idx_var], GRB.MINIMIZE
             )
             model.optimize()
-
-            # TODO: remove assert
-            assert model.status == GRB.Status.OPTIMAL
 
             if model.ObjVal <= 0.:
                 verified_flag = False
@@ -808,17 +778,21 @@ if __name__ == '__main__':
                         verified_flag = refine_all_layers(
                             nn, LB_N0, UB_N0, bounds, label, precise=True
                         )
-                    # TODO: determine strategy for large epsilons
+
+                    elif epsilon <= 0.0175:
+                        verified_flag, bounds = refine_first_n_layers(
+                            nn, LB_N0, UB_N0, bounds, 5, label, precise=True
+                        )
+
                     else:
                         verified_flag, bounds = refine_first_n_layers(
                             nn, LB_N0, UB_N0, bounds, 4, label, precise=True
                         )
 
-                        if not verified_flag:
-                            print('last')
-                            verified_flag = refine_last_n_layers(
-                                nn, bounds, 2, label, precise=True
-                            )
+                    if not verified_flag:
+                        verified_flag = refine_last_n_layers(
+                            nn, bounds, 2, label, precise=True
+                        )
 
             # networks: [9_100, 9_200]
             elif num_hidden_layers == 9:
@@ -828,18 +802,42 @@ if __name__ == '__main__':
                         verified_flag = refine_all_layers(
                             nn, LB_N0, UB_N0, bounds, label, precise=True
                         )
-                    # TODO: determine strategy for large epsilons
+
+                    elif epsilon <= 0.0275:
+                        verified_flag, bounds = refine_first_n_layers(
+                            nn, LB_N0, UB_N0, bounds, 7, label, precise=True
+                        )
+
+                    elif epsilon <= 0.0325:
+                        verified_flag, bounds = refine_first_n_layers(
+                            nn, LB_N0, UB_N0, bounds, 6, label, precise=True
+                        )
+
                     else:
-                        verified_flag = refine_first_n_layers(
-                            nn, LB_N0, UB_N0, bounds, num_hidden_layers - 1,
-                            label, precise=True
-                        )[0]
+                        verified_flag, bounds = refine_first_n_layers(
+                            nn, LB_N0, UB_N0, bounds, 5, label, precise=True
+                        )
+
+                    if not verified_flag:
+                        verified_flag = refine_last_n_layers(
+                            nn, bounds, 2, label, precise=True
+                        )
 
                 # networks: [9_200]
                 else:
                     if epsilon <= 0.0125:
                         verified_flag = refine_all_layers(
                             nn, LB_N0, UB_N0, bounds, label, precise=True
+                        )
+
+                    elif epsilon <= 0.015:
+                        verified_flag, bounds = refine_first_n_layers(
+                            nn, LB_N0, UB_N0, bounds, 8, label, precise=True
+                        )
+
+                    elif epsilon <= 0.0175:
+                        verified_flag, bounds = refine_first_n_layers(
+                            nn, LB_N0, UB_N0, bounds, 7, label, precise=True
                         )
 
                     elif epsilon <= 0.02:
@@ -871,13 +869,10 @@ if __name__ == '__main__':
             if verified_flag:
                 print("verified")
             else:
-                # TODO: remove quotations marks
-                """
                 # run refine_all_layers as last resort
                 verified_flag = refine_all_layers(
                     nn, LB_N0, UB_N0, bounds, label, precise=True
                 )
-                """
 
                 if verified_flag:
                     print("verified")
