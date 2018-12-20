@@ -771,6 +771,7 @@ if __name__ == '__main__':
 
         if verified_flag:
             print("verified")
+
         else:
             # choose refinement based on network architecture
             num_hidden_layers = nn.numlayer
@@ -782,7 +783,6 @@ if __name__ == '__main__':
                     nn, LB_N0, UB_N0, bounds, label, precise=True
                 )
 
-            # TODO: determine strategy for 4_1024
             # networks: [4_1024]
             elif num_hidden_layers == 4:
                 verified_flag, bounds = refine_first_n_layers(
@@ -790,7 +790,6 @@ if __name__ == '__main__':
                 )
 
                 if not verified_flag:
-                    print('last')
                     verified_flag = refine_last_n_layers(
                         nn, bounds, 2, label, precise=True
                     )
@@ -802,10 +801,10 @@ if __name__ == '__main__':
                     verified_flag = refine_all_layers(
                         nn, LB_N0, UB_N0, bounds, label, precise=True
                     )
-                # TODO: determine cutoff for 6_200
+
                 # networks: [6_200]
                 else:
-                    if epsilon <= 0.0125:
+                    if epsilon <= 0.015:
                         verified_flag = refine_all_layers(
                             nn, LB_N0, UB_N0, bounds, label, precise=True
                         )
@@ -825,7 +824,7 @@ if __name__ == '__main__':
             elif num_hidden_layers == 9:
                 # networks: [9_100]
                 if num_neurons_per_layer <= 100:
-                    if epsilon <= 0.02:
+                    if epsilon <= 0.025:
                         verified_flag = refine_all_layers(
                             nn, LB_N0, UB_N0, bounds, label, precise=True
                         )
@@ -842,25 +841,26 @@ if __name__ == '__main__':
                         verified_flag = refine_all_layers(
                             nn, LB_N0, UB_N0, bounds, label, precise=True
                         )
-                    # TODO: determine strategy for large epsilons
+
                     elif epsilon <= 0.02:
                         verified_flag, bounds = refine_first_n_layers(
-                            nn, LB_N0, UB_N0, bounds, 7, label, precise=True
+                            nn, LB_N0, UB_N0, bounds, 6, label, precise=True
                         )
 
-                        if not verified_flag:
-                            verified_flag = refine_last_n_layers(
-                                nn, bounds, 2, label, precise=True
-                            )
+                    elif epsilon <= 0.025:
+                        verified_flag, bounds = refine_first_n_layers(
+                            nn, LB_N0, UB_N0, bounds, 5, label, precise=True
+                        )
+
                     else:
                         verified_flag, bounds = refine_first_n_layers(
                             nn, LB_N0, UB_N0, bounds, 4, label, precise=True
                         )
 
-                        if not verified_flag:
-                            verified_flag = refine_last_n_layers(
-                                nn, bounds, 2, label, precise=True
-                            )
+                    if not verified_flag:
+                        verified_flag = refine_last_n_layers(
+                            nn, bounds, 2, label, precise=True
+                        )
 
             # unknown network architecture
             else:
@@ -871,6 +871,7 @@ if __name__ == '__main__':
             if verified_flag:
                 print("verified")
             else:
+                # TODO: remove quotations marks
                 """
                 # run refine_all_layers as last resort
                 verified_flag = refine_all_layers(
