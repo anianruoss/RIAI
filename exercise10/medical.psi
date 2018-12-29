@@ -22,12 +22,15 @@ def medical_cost (patient:R[]){
 	if patient[0]{
 		// cost for rare disease
 		cost += 10000;
+	} else if flip(0.055) {
+	    // randomly charge patients to ensure privacy
+	    cost += 10000;
 	}
 
 	if patient[1]{
-		// cost for flu
+		// probability that doctor treats flu: 50%
 		if flip(0.5){
-			// probability that doctor treats flu: 50%
+		    // cost for flu
 			cost += 70;
 		}
 	}
@@ -37,5 +40,8 @@ def medical_cost (patient:R[]){
 
 def main(){
 	P := patient_prior();
-	return medical_cost(P);
+	C := medical_cost(P);
+	observe(C == 10070);
+
+    return P[0]
 }

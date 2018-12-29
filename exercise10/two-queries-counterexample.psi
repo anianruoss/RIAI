@@ -3,8 +3,8 @@ n_entries := 4;
 
 def main() {
 	// input
-	database1 := [1,1,0,0];
-	database2 := ...;
+	database1 := [1, 1, 0, 0];
+	database2 := [1, 0, 0, 0];
 	output1 := F(database1);
 	output2 := F(database2);
 	check1 := Phi(output1);
@@ -14,7 +14,7 @@ def main() {
 }
 
 def Phi(output:R x R) {
-	...
+    return (1.5 <= output[0]) && (1.5 <= output[1]);
 }
 
 def F(database:R[]) {
