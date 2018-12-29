@@ -1,0 +1,41 @@
+// a patient is captured by an array of real numbers
+def patient_prior(): R[]{
+
+	// probability that patient has the rare disease: 1%
+	rare := flip(0.01);
+
+	// probability that patient has the flu
+	flu := 0;
+
+	if rare{
+		flu = flip(0.5);
+	} else {
+		flu = flip(0.1);
+	}
+
+	return [rare, flu];
+}
+
+def medical_cost (patient:R[]){
+	cost := 0;
+
+	if patient[0]{
+		// cost for rare disease
+		cost += 10000;
+	}
+
+	if patient[1]{
+		// cost for flu
+		if flip(0.5){
+			// probability that doctor treats flu: 50%
+			cost += 70;
+		}
+	}
+
+	return cost;
+}
+
+def main(){
+	P := patient_prior();
+	return medical_cost(P);
+}

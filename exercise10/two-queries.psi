@@ -1,0 +1,31 @@
+eps := 0.1;
+n_entries := 4;
+
+def main() {
+	// input
+	database := [1,1,0,0];
+	output := F(database);
+
+	return output;
+}
+
+def F(database:R[]) {
+	query1 := query(database);
+	query2 := query(database);
+
+	return (query1, query2);
+}
+
+def query(database:R[]) {
+	n_disease := 0;
+
+	for i in [0..n_entries) {
+		if database[i]{
+			n_disease+=1;
+		}
+	}
+
+	r := laplace(n_disease,1/eps);
+
+	return r;
+}

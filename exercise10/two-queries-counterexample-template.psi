@@ -1,0 +1,39 @@
+eps := 0.1;
+n_entries := 4;
+
+def main() {
+	// input
+	database1 := [1,1,0,0];
+	database2 := ...;
+	output1 := F(database1);
+	output2 := F(database2);
+	check1 := Phi(output1);
+	check2 := Phi(output2);
+
+	return (check1, check2);
+}
+
+def Phi(output:R x R) {
+	...
+}
+
+def F(database:R[]) {
+	query1 := query(database);
+	query2 := query(database);
+
+	return (query1, query2);
+}
+
+def query(database:R[]) {
+	n_disease := 0;
+
+	for i in [0..n_entries) {
+		if database[i]{
+			n_disease+=1;
+		}
+	}
+
+	r := laplace(n_disease,1/eps);
+
+	return r;
+}
