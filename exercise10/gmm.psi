@@ -1,0 +1,35 @@
+def inverseGamma(alpha, beta) {
+    return 1 / gamma(alpha, beta);
+}
+
+def main() {
+    K := 2;
+    N := 5;
+    mu_0 := 0;
+    lambda := 1;
+    nu := 1;
+    var_0 := 1;
+
+    // observed data points
+    X := [0, 0, 0, 1, 1];
+
+    // mixture weights
+    phi := array(K, 1 / K);
+
+    // means and variances
+    var := array(K, 1);
+    mu := array(K, 1);
+
+    for i in [0..K) {
+        var[i] = inverseGamma(nu, var_0);
+        mu[i] = gauss(mu_0, lambda * var[i]);
+    }
+
+    for i in [0..N) {
+        z := categorical(phi);
+        x := gauss(mu[z], var[z]);
+        cobserve(x, X[i]);
+    }
+
+    return (mu, var);
+}
